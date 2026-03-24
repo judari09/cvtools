@@ -1,0 +1,11 @@
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+app/modules/utils_computer_vision/utils_computer_vision/
+*.zip
