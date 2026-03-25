@@ -1,0 +1,12 @@
+tasks:
+  - name: resize_images
+    params:
+      input_path: ./images
+      output_path: ./images_resized
+      width: 640
+      height: 480
+  - name: convert_format
+    params:
+      input_format: jpg
+      output_format: png
+      quality: 95
