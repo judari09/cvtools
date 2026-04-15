@@ -14,12 +14,30 @@ class ListarClasesJsonTask(Task):
     name = "listar_clases_json"
     
     def __init__(self, params):
+        """Initialize the ListarClasesJsonTask.
+
+        Parameters
+        ----------
+        params : object
+            Parameters object containing configuration.
+        """
         super().__init__(name="listar_clases_json", params=params)
         self.params = params
 
 
     def listar_clases(self,folder_path):
-        """Recorre todos los .json de la carpeta y recopila las clases."""
+        """List all unique classes from JSON files in a folder.
+
+        Parameters
+        ----------
+        folder_path : str
+            Path to the folder containing JSON files.
+
+        Returns
+        -------
+        Counter
+            Counter object with class names and their counts.
+        """
         contador_clases = Counter()
         archivos_procesados = 0
         archivos_con_error = 0
@@ -61,5 +79,7 @@ class ListarClasesJsonTask(Task):
         return contador_clases
 
     def run(self):
+        """Run the class listing task.
+        """
         self.listar_clases(self.params.folder_path)
 

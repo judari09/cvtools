@@ -8,13 +8,32 @@ from core.task import Task
 class OptimizePolygonsJsonTask(Task):
     name = "optimize_polygons_json"
     def __init__(self, params):
+        """Initialize the OptimizePolygonsJsonTask.
+
+        Parameters
+        ----------
+        params : object
+            Parameters object containing configuration.
+        """
         super().__init__(name="optimize_polygons_json", params=params)
         self.params = params
 
     def remove_close_points(self, points, min_dist=2.0):
-        """
-        Elimina puntos consecutivos que esten a menos de min_dist pixeles.
-        Esto remueve puntos duplicados o casi duplicados que generan ruido visual.
+        """Remove consecutive points that are closer than min_dist pixels.
+
+        This removes duplicate or nearly duplicate points that generate visual noise.
+
+        Parameters
+        ----------
+        points : list
+            List of [x, y] points.
+        min_dist : float, optional
+            Minimum distance between consecutive points in pixels. Default is 2.0.
+
+        Returns
+        -------
+        list
+            Filtered list of points.
         """
         if len(points) <= 3:
             return points
@@ -30,10 +49,21 @@ class OptimizePolygonsJsonTask(Task):
 
 
     def simplify_polygon(self, points, epsilon=2.0, min_points=5):
-        """
-        Simplifica un poligono usando Douglas-Peucker (cv2.approxPolyDP).
-        - epsilon: tolerancia en pixeles (mayor = mas simplificacion)
-        - min_points: minimo de puntos que debe conservar
+        """Simplify a polygon using Douglas-Peucker algorithm (cv2.approxPolyDP).
+
+        Parameters
+        ----------
+        points : list
+            List of [x, y] points.
+        epsilon : float, optional
+            Tolerance in pixels (higher = more simplification). Default is 2.0.
+        min_points : int, optional
+            Minimum number of points to preserve. Default is 5.
+
+        Returns
+        -------
+        list
+            Simplified list of points.
         """
         if len(points) <= min_points:
             return points
@@ -51,10 +81,21 @@ class OptimizePolygonsJsonTask(Task):
 
 
     def smooth_contour(self,points, window=5):
-        """
-        Suaviza el contorno aplicando media movil circular sobre las coordenadas.
-        Reduce irregularidades sin cambiar drasticamente la forma.
-        - window: tamaño de la ventana de suavizado (impar recomendado)
+        """Smooth the contour by applying circular moving average on coordinates.
+
+        Reduces irregularities without drastically changing the shape.
+
+        Parameters
+        ----------
+        points : list
+            List of [x, y] points.
+        window : int, optional
+            Size of the smoothing window (odd recommended). Default is 5.
+
+        Returns
+        -------
+        list
+            Smoothed list of points.
         """
         if len(points) <= window:
             return points
@@ -72,11 +113,31 @@ class OptimizePolygonsJsonTask(Task):
 
 
     def optimize_shape(self,points, epsilon=3.0, min_dist=2.0, min_points=5, smooth=False, smooth_window=5):
-        """
-        Pipeline completo de optimizacion de un poligono:
-        1. Eliminar puntos cercanos/duplicados
-        2. (Opcional) Suavizar contorno
-        3. Simplificar con Douglas-Peucker
+        """Complete polygon optimization pipeline.
+
+        1. Remove close/duplicate points
+        2. (Optional) Smooth contour
+        3. Simplify with Douglas-Peucker
+
+        Parameters
+        ----------
+        points : list
+            List of [x, y] points.
+        epsilon : float, optional
+            Douglas-Peucker tolerance. Default is 3.0.
+        min_dist : float, optional
+            Minimum distance between consecutive points. Default is 2.0.
+        min_points : int, optional
+            Minimum points to preserve. Default is 5.
+        smooth : bool, optional
+            Enable contour smoothing. Default is False.
+        smooth_window : int, optional
+            Smoothing window size. Default is 5.
+
+        Returns
+        -------
+        list
+            Optimized list of points.
         """
         # Paso 1: eliminar puntos cercanos
         points = self.remove_close_points(points, min_dist=min_dist)
@@ -93,14 +154,24 @@ class OptimizePolygonsJsonTask(Task):
 
     def optimize_jsons(self, folder_path, epsilon=3.0, min_dist=2.0, min_points=5,
                     smooth=False, smooth_window=5, target_label=None):
-        """
-        Recorre todos los JSON (formato LabelMe) en la carpeta y optimiza los poligonos.
-        - epsilon: tolerancia Douglas-Peucker (mayor = mas agresivo). Recomendado: 2.0-5.0
-        - min_dist: distancia minima entre puntos consecutivos en px
-        - min_points: minimo de puntos a conservar por poligono
-        - smooth: activar suavizado de contorno
-        - smooth_window: ventana del suavizado
-        - target_label: si se especifica, solo optimiza shapes con ese label (None = todos)
+        """Optimize polygons in all JSON files (LabelMe format) in the folder.
+
+        Parameters
+        ----------
+        folder_path : str
+            Path to folder containing JSON files.
+        epsilon : float, optional
+            Douglas-Peucker tolerance (higher = more aggressive). Recommended: 2.0-5.0. Default is 3.0.
+        min_dist : float, optional
+            Minimum distance between consecutive points in pixels. Default is 2.0.
+        min_points : int, optional
+            Minimum points to preserve per polygon. Default is 5.
+        smooth : bool, optional
+            Enable contour smoothing. Default is False.
+        smooth_window : int, optional
+            Smoothing window size. Default is 5.
+        target_label : str, optional
+            If specified, only optimize shapes with this label (None = all). Default is None.
         """
         json_files = [f for f in os.listdir(folder_path) if f.endswith('.json')]
 
@@ -170,6 +241,8 @@ class OptimizePolygonsJsonTask(Task):
         print(f"  Reduccion: {reduction:.1f}%")
 
     def run(self):
+        """Run the polygon optimization task.
+        """
         self.optimize_jsons(
             folder_path=self.params.folder_path,
             epsilon=self.params.epsilon,

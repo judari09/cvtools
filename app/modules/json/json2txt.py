@@ -12,6 +12,13 @@ class Json2TxtTask(Task):
     name = "json2txt"
     
     def __init__(self, params):
+        """Initialize the Json2TxtTask.
+
+        Parameters
+        ----------
+        params : object
+            Parameters object containing configuration.
+        """
         super().__init__(name="json2txt", params=params)
         self.params = params
 
@@ -23,12 +30,26 @@ class Json2TxtTask(Task):
 
 
     def obtener_dimensiones(self,json_file, data, carpeta_imagenes):
-        """
-        Obtiene las dimensiones reales de la imagen asociada al JSON.
-        Prioridad:
-        1. Imagen real (cv2)
-        2. Metadatos del JSON (imageWidth / imageHeight)
-        3. Fallback hardcodeado (640x360)
+        """Get the real dimensions of the image associated with the JSON.
+
+        Priority:
+        1. Real image (cv2)
+        2. JSON metadata (imageWidth / imageHeight)
+        3. Hardcoded fallback (640x360)
+
+        Parameters
+        ----------
+        json_file : str
+            Path to the JSON file.
+        data : dict
+            Loaded JSON data.
+        carpeta_imagenes : str
+            Directory containing images.
+
+        Returns
+        -------
+        tuple
+            (width, height, source) where source is 'imagen', 'json', or 'fallback'.
         """
         nombre_base = os.path.splitext(os.path.basename(json_file))[0]
 
@@ -52,7 +73,22 @@ class Json2TxtTask(Task):
 
 
     def convert_to_yolo_format(self, points, img_width, img_height):
-        """Convierte lista de puntos a string normalizado para YOLO segmentación."""
+        """Convert list of points to normalized string for YOLO segmentation.
+
+        Parameters
+        ----------
+        points : list
+            List of [x, y] points.
+        img_width : int
+            Image width.
+        img_height : int
+            Image height.
+
+        Returns
+        -------
+        str
+            Space-separated normalized coordinates.
+        """
         coords = []
         for point in points:
             x = point[0] / img_width
@@ -62,13 +98,16 @@ class Json2TxtTask(Task):
 
 
     def convertir_json_a_txt(self,input_dir, output_dir, carpeta_imagenes=None):
-        """
-        Convierte archivos JSON de LabelMe a formato YOLO segmentación (.txt).
+        """Convert LabelMe JSON files to YOLO segmentation format (.txt).
 
-        Args:
-            input_dir: Carpeta con archivos JSON.
-            output_dir: Carpeta de salida para los .txt.
-            carpeta_imagenes: Carpeta con las imágenes (por defecto igual a input_dir).
+        Parameters
+        ----------
+        input_dir : str
+            Directory with JSON files.
+        output_dir : str
+            Output directory for .txt files.
+        carpeta_imagenes : str, optional
+            Directory with images (default same as input_dir).
         """
         if carpeta_imagenes is None:
             carpeta_imagenes = input_dir
@@ -113,6 +152,8 @@ class Json2TxtTask(Task):
         print(f"Archivos guardados en: {output_dir}")
     
     def run(self):
+        """Run the JSON to TXT conversion task.
+        """
         self.convertir_json_a_txt(
             input_dir=self.params.input_dir,
             output_dir=self.params.output_dir,

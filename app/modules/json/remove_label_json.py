@@ -7,13 +7,25 @@ class RemoveLabelJsonTask(Task):
     name = "remove_label_json"
     
     def __init__(self, params):
+        """Initialize the RemoveLabelJsonTask.
+
+        Parameters
+        ----------
+        params : object
+            Parameters object containing configuration.
+        """
         super().__init__(name="remove_label_json", params=params)
         self.params = params
 
     def remove_label_from_jsons(self,folder_path, label_to_remove):
-        """
-        Recorre todos los archivos JSON (formato LabelMe) en la carpeta
-        y elimina las shapes cuyo 'label' coincida con label_to_remove.
+        """Remove shapes with a specific label from all JSON files in a folder.
+
+        Parameters
+        ----------
+        folder_path : str
+            Path to folder containing JSON files.
+        label_to_remove : str
+            Label to remove from shapes.
         """
         json_files = [f for f in os.listdir(folder_path) if f.endswith(".json")]
 
@@ -51,4 +63,6 @@ class RemoveLabelJsonTask(Task):
         )
 
     def run(self):
+        """Run the label removal task.
+        """
         self.remove_label_from_jsons(self.params.folder_path, self.params.label_to_remove)
