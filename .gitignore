@@ -9,3 +9,4 @@ wheels/
 
 app/modules/utils_computer_vision/utils_computer_vision/
 *.zip
+*.pt
