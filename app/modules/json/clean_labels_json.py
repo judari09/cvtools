@@ -1,6 +1,12 @@
 import os
 import json
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 class CleanLabelsJsonTask(Task):
     """
@@ -68,3 +74,33 @@ class CleanLabelsJsonTask(Task):
         Calls clean_image_data_in_json with the configured parameters.
         """
         self.clean_image_data_in_json(self.params.folder_path, self.params.field, self.params.value)
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Clean JSON label files by setting a field value."
+    )
+    parser.add_argument(
+        "--folder-path",
+        required=True,
+        help="Path to the folder containing JSON files.",
+    )
+    parser.add_argument(
+        "--field",
+        default="imageData",
+        help="JSON field to update for every file.",
+    )
+    parser.add_argument(
+        "--value",
+        default="null",
+        help="Value to write for the field (use 'null' to set None).",
+    )
+    args = parser.parse_args()
+    value = None if args.value.lower() == "null" else args.value
+    params = argparse.Namespace(
+        folder_path=args.folder_path,
+        field=args.field,
+        value=value,
+    )
+    CleanLabelsJsonTask(params).run()

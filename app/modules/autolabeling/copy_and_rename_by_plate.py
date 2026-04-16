@@ -4,7 +4,13 @@ import os
 import shutil
 import sys
 import cv2
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 # Agregar el path del código del proyecto para importar módulos
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "code"))
 from src.ocr_plate import process_image
@@ -269,3 +275,44 @@ class CopyAndRenameByPlateTask(Task):
         # Generar reporte de estadísticas
         self.print_statistics(stats)
 
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Copy and rename images by detected license plate."
+    )
+    parser.add_argument(
+        "--images-dir",
+        required=True,
+        help="Input images folder.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        required=True,
+        help="Output folder for renamed images.",
+    )
+    parser.add_argument(
+        "--cropped-plates-dir",
+        required=True,
+        help="Output folder for cropped license plate images.",
+    )
+    parser.add_argument(
+        "--plate-model-path",
+        required=True,
+        help="Path to YOLO license plate detection model.",
+    )
+    parser.add_argument(
+        "--output-dir-norec",
+        required=True,
+        help="Output folder for images without a valid plate detection.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        IMAGES_DIR=args.images_dir,
+        OUTPUT_DIR=args.output_dir,
+        CROPPED_PLATES_DIR=args.cropped_plates_dir,
+        PLATE_MODEL_PATH=args.plate_model_path,
+        OUTPUT_DIR_NOREC=args.output_dir_norec,
+    )
+    CopyAndRenameByPlateTask(params).run()

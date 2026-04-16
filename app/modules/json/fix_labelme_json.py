@@ -15,7 +15,13 @@ import argparse
 import json
 import glob
 
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 class FixLabelMeJsonTask(Task):
     """
@@ -237,3 +243,38 @@ class FixLabelMeJsonTask(Task):
         action = "se corregirían" if dry_run else "corregidos"
         print(f"\nResumen: {fixed_count}/{total} archivos {action}")
 
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Fix LabelMe JSON files to be fully valid."
+    )
+    parser.add_argument(
+        "--labels-dir",
+        required=True,
+        help="Folder containing LabelMe JSON label files.",
+    )
+    parser.add_argument(
+        "--images-dir",
+        required=True,
+        help="Folder containing the referenced images.",
+    )
+    parser.add_argument(
+        "--version",
+        default="5.10.1",
+        help="LabelMe version to set in JSON files.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show changes without writing JSON files.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        labels_dir=args.labels_dir,
+        images_dir=args.images_dir,
+        version=args.version,
+        dry_run=args.dry_run,
+    )
+    FixLabelMeJsonTask(params).run()

@@ -4,6 +4,20 @@ from app.core.registry import registry
 from app.core.task import Task
 from app.core.executor import executor
 
+from app.modules.general.check_integrity_dataset import CheckIntegrityDatasetTask
+from app.modules.general.check_model_classes import CheckModelClassesTask
+from app.modules.general.check_sizes import CheckSizesTask
+from app.modules.general.crop_images import CropImagesTask
+from app.modules.general.extract_frames import ExtractFramesTask
+from app.modules.general.imagenes_db import ImagenesDbTask
+from app.modules.general.move_to_comb import MoveToCombTask
+from app.modules.general.prepare_images_to_dataset import PrepareImagesToDatasetTask
+from app.modules.general.resize_folder import ResizeFolderTask
+from app.modules.general.separar_train_val import SepararTrainValTask
+from app.modules.general.unir_videos import UnirVideosTask
+from app.modules.general.visualize_dataset import VisualizeDatasetTask
+from app.modules.general.yolo_crop_dataset import YoloCropDatasetTask
+
 
 # Crear una tarea de ejemplo
 class ResizeImagesTask(Task):
@@ -41,6 +55,19 @@ def main():
     available_tasks = {
         ResizeImagesTask.name: ResizeImagesTask,
         ConvertFormatTask.name: ConvertFormatTask,
+        CheckIntegrityDatasetTask.name: CheckIntegrityDatasetTask,
+        CheckModelClassesTask.name: CheckModelClassesTask,
+        CheckSizesTask.name: CheckSizesTask,
+        CropImagesTask.name: CropImagesTask,
+        ExtractFramesTask.name: ExtractFramesTask,
+        ImagenesDbTask.name: ImagenesDbTask,
+        MoveToCombTask.name: MoveToCombTask,
+        PrepareImagesToDatasetTask.name: PrepareImagesToDatasetTask,
+        ResizeFolderTask.name: ResizeFolderTask,
+        SepararTrainValTask.name: SepararTrainValTask,
+        UnirVideosTask.name: UnirVideosTask,
+        VisualizeDatasetTask.name: VisualizeDatasetTask,
+        YoloCropDatasetTask.name: YoloCropDatasetTask,
     }
 
     # Cargar configuración desde YAML

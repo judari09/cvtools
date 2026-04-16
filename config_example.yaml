@@ -1,12 +1,34 @@
 tasks:
-  - name: resize_images
+  - name: check_sizes
     params:
-      input_path: ./images
-      output_path: ./images_resized
-      width: 640
-      height: 480
-  - name: convert_format
+      folder_path: ./images
+
+  - name: check_integrity_dataset
     params:
-      input_format: jpg
-      output_format: png
-      quality: 95
+      images_dir: ./images
+      labels_dir: ./labels
+      output_window: false
+
+  - name: move_to_comb
+    params:
+      image_folder: ./images
+      label_folder: ./labels
+      destination_folder: ./comb
+
+  - name: prepare_images_to_dataset
+    params:
+      input_dir: ./labelme_dataset
+      output_dir: ./ocr_dataset
+      target_height: 64
+      target_width: 256
+      padding: 0.05
+      mode: auto
+      split_ratio: 0.8
+
+  - name: visualize_dataset
+    params:
+      dataset_dir: ./ocr_dataset
+      num_samples: 12
+      random_sample: true
+      show_train: true
+      show_val: false

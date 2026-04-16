@@ -4,7 +4,13 @@ import cv2
 import albumentations as A
 import glob
 from collections import Counter
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 # ---------------------------------------------------------------------------
 # Perfiles de augmentación
@@ -502,3 +508,38 @@ class AlbumentationsForYolosegTask(Task):
             self.params.output_labels_dir
         )
 
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Apply Albumentations augmentations to a YOLO segmentation dataset."
+    )
+    parser.add_argument(
+        "--input-images-dir",
+        required=True,
+        help="Input images folder.",
+    )
+    parser.add_argument(
+        "--input-labels-dir",
+        required=True,
+        help="Input LabelMe JSON folder.",
+    )
+    parser.add_argument(
+        "--output-images-dir",
+        required=True,
+        help="Output folder for augmented images.",
+    )
+    parser.add_argument(
+        "--output-labels-dir",
+        required=True,
+        help="Output folder for generated JSON label files.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        input_images_dir=args.input_images_dir,
+        input_labels_dir=args.input_labels_dir,
+        output_images_dir=args.output_images_dir,
+        output_labels_dir=args.output_labels_dir,
+    )
+    AlbumentationsForYolosegTask(params).run()

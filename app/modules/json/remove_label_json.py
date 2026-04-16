@@ -1,6 +1,12 @@
 import os
 import json
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 class RemoveLabelJsonTask(Task):
     
@@ -66,3 +72,26 @@ class RemoveLabelJsonTask(Task):
         """Run the label removal task.
         """
         self.remove_label_from_jsons(self.params.folder_path, self.params.label_to_remove)
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Remove shapes with a specific label from LabelMe JSON files."
+    )
+    parser.add_argument(
+        "--folder-path",
+        required=True,
+        help="Folder containing JSON files.",
+    )
+    parser.add_argument(
+        "--label-to-remove",
+        required=True,
+        help="Label value to remove from each JSON file.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        folder_path=args.folder_path,
+        label_to_remove=args.label_to_remove,
+    )
+    RemoveLabelJsonTask(params).run()

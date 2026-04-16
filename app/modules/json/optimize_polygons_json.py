@@ -3,7 +3,13 @@ import json
 import shutil
 import numpy as np
 import cv2
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 class OptimizePolygonsJsonTask(Task):
     name = "optimize_polygons_json"
@@ -252,3 +258,60 @@ class OptimizePolygonsJsonTask(Task):
             smooth_window=self.params.smooth_window,
             target_label=self.params.target_label,
         )
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Optimize polygon annotations in LabelMe JSON files."
+    )
+    parser.add_argument(
+        "--folder-path",
+        required=True,
+        help="Folder containing JSON files to optimize.",
+    )
+    parser.add_argument(
+        "--epsilon",
+        type=float,
+        default=3.0,
+        help="Douglas-Peucker epsilon for polygon simplification.",
+    )
+    parser.add_argument(
+        "--min-dist",
+        type=float,
+        default=2.0,
+        help="Minimum distance for duplicate point removal.",
+    )
+    parser.add_argument(
+        "--min-points",
+        type=int,
+        default=5,
+        help="Minimum points to preserve per polygon.",
+    )
+    parser.add_argument(
+        "--smooth",
+        action="store_true",
+        help="Apply smoothing before simplification.",
+    )
+    parser.add_argument(
+        "--smooth-window",
+        type=int,
+        default=5,
+        help="Window size used by smoothing.",
+    )
+    parser.add_argument(
+        "--target-label",
+        default=None,
+        help="Only optimize polygons with this label.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        folder_path=args.folder_path,
+        epsilon=args.epsilon,
+        min_dist=args.min_dist,
+        min_points=args.min_points,
+        smooth=args.smooth,
+        smooth_window=args.smooth_window,
+        target_label=args.target_label,
+    )
+    OptimizePolygonsJsonTask(params).run()

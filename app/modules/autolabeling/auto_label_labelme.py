@@ -8,7 +8,13 @@ import contextlib
 import cv2
 from ultralytics import YOLO
 from tqdm import tqdm
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 
 class _TimeoutError(Exception):
@@ -610,3 +616,82 @@ class AutoLabelLabelMeTask(Task):
             class_map=class_map,
             epsilon=self.params.epsilon,
         )
+
+if __name__ == "__main__":
+    import argparse
+
+    def parse_class_map(entries):
+        values = []
+        for entry in entries or []:
+            if ":" in entry:
+                values.append(entry)
+            else:
+                print(f"Advertencia: formato inválido para class-map '{entry}', se ignora.")
+        return values
+
+    parser = argparse.ArgumentParser(
+        description="Auto-label images using YOLO models and generate LabelMe JSONs."
+    )
+    parser.add_argument(
+        "--models",
+        nargs="+",
+        required=True,
+        help="Paths to one or more YOLO segmentation models.",
+    )
+    parser.add_argument(
+        "--input",
+        required=True,
+        help="Input images folder.",
+    )
+    parser.add_argument(
+        "--output",
+        required=True,
+        help="Output folder for generated JSON files.",
+    )
+    parser.add_argument(
+        "--conf",
+        type=float,
+        default=0.5,
+        help="Detection confidence threshold.",
+    )
+    parser.add_argument(
+        "--det-models",
+        nargs="*",
+        default=[],
+        help="Optional YOLO detection models.",
+    )
+    parser.add_argument(
+        "--use-sam",
+        action="store_true",
+        help="Enable SAM refinement when available.",
+    )
+    parser.add_argument(
+        "--sam-model",
+        default=None,
+        help="Optional SAM model path.",
+    )
+    parser.add_argument(
+        "--class-map",
+        nargs="*",
+        default=[],
+        help="Optional class renaming map entries as original:new or original:null.",
+    )
+    parser.add_argument(
+        "--epsilon",
+        type=float,
+        default=2.0,
+        help="Polygon simplification epsilon for mask shapes.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        models=args.models,
+        input=args.input,
+        output=args.output,
+        conf=args.conf,
+        det_models=args.det_models,
+        use_sam=args.use_sam,
+        sam_model=args.sam_model,
+        class_map=parse_class_map(args.class_map),
+        epsilon=args.epsilon,
+    )
+    AutoLabelLabelMeTask(params).run()

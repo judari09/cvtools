@@ -2,7 +2,13 @@ import os
 import cv2
 import albumentations as A
 import matplotlib.pyplot as plt
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 
 
@@ -147,3 +153,38 @@ class AlbumentationsForYoloTask(Task):
                 # Guardar labels aumentados
                 out_label_path = os.path.join(self.params.output_labels_dir, f"{os.path.splitext(img_name)[0]}_aug{i}.txt") # Ruta completa del archivo de etiquetas aumentadas
                 self.save_yolo_labels(out_label_path, bboxes_aug, labels_aug) # Guardar etiquetas aumentadas en formato YOLO
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Apply Albumentations augmentations to a YOLO dataset."
+    )
+    parser.add_argument(
+        "--input-images-dir",
+        required=True,
+        help="Input images folder.",
+    )
+    parser.add_argument(
+        "--input-labels-dir",
+        required=True,
+        help="Input YOLO label files folder.",
+    )
+    parser.add_argument(
+        "--output-images-dir",
+        required=True,
+        help="Output folder for augmented images.",
+    )
+    parser.add_argument(
+        "--output-labels-dir",
+        required=True,
+        help="Output folder for augmented label files.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        input_images_dir=args.input_images_dir,
+        input_labels_dir=args.input_labels_dir,
+        output_images_dir=args.output_images_dir,
+        output_labels_dir=args.output_labels_dir,
+    )
+    AlbumentationsForYoloTask(params).run()

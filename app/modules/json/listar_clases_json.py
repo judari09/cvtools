@@ -7,7 +7,13 @@ junto con la cantidad de apariciones de cada una.
 import os
 import json
 from collections import Counter
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 class ListarClasesJsonTask(Task):
     
@@ -83,3 +89,18 @@ class ListarClasesJsonTask(Task):
         """
         self.listar_clases(self.params.folder_path)
 
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="List unique classes from LabelMe JSON files."
+    )
+    parser.add_argument(
+        "--folder-path",
+        required=True,
+        help="Folder containing JSON files.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(folder_path=args.folder_path)
+    ListarClasesJsonTask(params).run()

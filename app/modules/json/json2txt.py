@@ -3,7 +3,13 @@ import json
 import glob
 import cv2
 from tqdm import tqdm
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 
 # Mapeo de clases
@@ -160,3 +166,57 @@ class Json2TxtTask(Task):
             carpeta_imagenes=self.params.carpeta_imagenes,
         )
 
+
+if __name__ == "__main__":
+    import argparse
+
+    def parse_class_map(entries):
+        mapping = {}
+        for entry in entries or []:
+            if ":" in entry:
+                label, value = entry.split(":", 1)
+                try:
+                    mapping[label] = int(value)
+                except ValueError:
+                    print(f"Advertencia: valor de clase inválido para '{label}': {value}")
+        return mapping
+
+    parser = argparse.ArgumentParser(
+        description="Convert LabelMe JSON annotations to YOLO .txt format."
+    )
+    parser.add_argument(
+        "--input-dir",
+        required=True,
+        help="Directory containing input JSON files.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        required=True,
+        help="Directory where YOLO .txt files will be written.",
+    )
+    parser.add_argument(
+        "--carpeta-imagenes",
+        default=None,
+        help="Optional folder containing associated images. Defaults to input directory.",
+    )
+    parser.add_argument(
+        "--class-map",
+        nargs="*",
+        default=[],
+        help="Optional class map entries in label:id format.",
+    )
+    parser.add_argument(
+        "--default-class-id",
+        type=int,
+        default=0,
+        help="Default class ID used for labels not found in class map.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        input_dir=args.input_dir,
+        output_dir=args.output_dir,
+        carpeta_imagenes=args.carpeta_imagenes or args.input_dir,
+        CLASS_MAP=parse_class_map(args.class_map),
+        DEFAULT_CLASS_ID=args.default_class_id,
+    )
+    Json2TxtTask(params).run()

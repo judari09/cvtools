@@ -1,6 +1,12 @@
 import os
 from paddleocr import PaddleOCR
-from core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
+
 
 class AutoLabelOcrTask(Task):
     """
@@ -67,3 +73,26 @@ class AutoLabelOcrTask(Task):
                     print(f"Procesada: {filename} -> {label}")
 
         print(f"\nArchivo de etiquetas generado: {self.params.output_file}")
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Run OCR-based auto-labeling on a folder of images."
+    )
+    parser.add_argument(
+        "--input-folder",
+        required=True,
+        help="Folder containing input images.",
+    )
+    parser.add_argument(
+        "--output-file",
+        required=True,
+        help="Output text file for OCR results.",
+    )
+    args = parser.parse_args()
+    params = argparse.Namespace(
+        input_folder=args.input_folder,
+        output_file=args.output_file,
+    )
+    AutoLabelOcrTask(params).run()
