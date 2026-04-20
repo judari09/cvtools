@@ -10,7 +10,28 @@ from app.core.task import Task
 
 
 class CheckModelClassesTask(Task):
-    """Tarea para mostrar las clases de modelos YOLO."""
+    """Tarea para mostrar las clases de modelos YOLO.
+
+Example YAML:
+```yaml
+- name: check_model_classes
+  params:
+    models: <value>
+```
+
+Example YAML:
+```yaml
+- name: check_model_classes
+  params:
+    models: <value>
+```
+
+Example YAML:
+```yaml
+- name: check_model_classes
+  params:
+    models: <value>
+```"""
 
     name = "check_model_classes"
 

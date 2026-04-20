@@ -13,7 +13,34 @@ from app.core.task import Task
 
 
 class ExtractFramesTask(Task):
-    """Tarea para extraer frames de un video."""
+    """Tarea para extraer frames de un video.
+
+Example YAML:
+```yaml
+- name: extract_frames
+  params:
+    video_path: <value>
+    output_folder: <value>
+    frame_step: <value>
+```
+
+Example YAML:
+```yaml
+- name: extract_frames
+  params:
+    video_path: <value>
+    output_folder: <value>
+    frame_step: <value>
+```
+
+Example YAML:
+```yaml
+- name: extract_frames
+  params:
+    video_path: <value>
+    output_folder: <value>
+    frame_step: <value>
+```"""
 
     name = "extract_frames"
 

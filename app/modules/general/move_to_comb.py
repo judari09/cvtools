@@ -63,7 +63,34 @@ def mover_imagenes_y_etiquetas(image_folder, label_folder, destination_folder):
 
 
 class MoveToCombTask(Task):
-    """Tarea para copiar imágenes y etiquetas emparejadas a una carpeta combinada."""
+    """Tarea para copiar imágenes y etiquetas emparejadas a una carpeta combinada.
+
+Example YAML:
+```yaml
+- name: move_to_comb
+  params:
+    image_folder: <value>
+    label_folder: <value>
+    destination_folder: <value>
+```
+
+Example YAML:
+```yaml
+- name: move_to_comb
+  params:
+    image_folder: <value>
+    label_folder: <value>
+    destination_folder: <value>
+```
+
+Example YAML:
+```yaml
+- name: move_to_comb
+  params:
+    image_folder: <value>
+    label_folder: <value>
+    destination_folder: <value>
+```"""
 
     name = "move_to_comb"
 

@@ -13,7 +13,43 @@ from app.core.task import Task
 
 
 class CropImagesTask(Task):
-    """Tarea para recortar imágenes en un área fija."""
+    """Tarea para recortar imágenes en un área fija.
+
+Example YAML:
+```yaml
+- name: crop_images
+  params:
+    input_folder: <value>
+    output_folder: <value>
+    x1: <value>
+    y1: <value>
+    x2: <value>
+    y2: <value>
+```
+
+Example YAML:
+```yaml
+- name: crop_images
+  params:
+    input_folder: <value>
+    output_folder: <value>
+    x1: <value>
+    y1: <value>
+    x2: <value>
+    y2: <value>
+```
+
+Example YAML:
+```yaml
+- name: crop_images
+  params:
+    input_folder: <value>
+    output_folder: <value>
+    x1: <value>
+    y1: <value>
+    x2: <value>
+    y2: <value>
+```"""
 
     name = "crop_images"
 

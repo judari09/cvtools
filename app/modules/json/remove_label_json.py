@@ -9,6 +9,16 @@ except ImportError:
 
 
 class RemoveLabelJsonTask(Task):
+    """Tarea para remove_label_json.
+
+Example YAML:
+```yaml
+- name: remove_label_json
+  params:
+    folder_path: <value>
+    label_to_remove: <value>
+```"""
+
     
     name = "remove_label_json"
     

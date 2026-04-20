@@ -13,8 +13,7 @@ except ImportError:
 
 
 class AlbumentationsForYoloTask(Task):
-    """
-    Task for applying data augmentation to YOLO-formatted datasets using Albumentations.
+    """Task for applying data augmentation to YOLO-formatted datasets using Albumentations.
 
     This class extends the base Task class to perform image and bounding box augmentations
     specifically tailored for YOLO object detection models. It applies a series of transformations
@@ -25,7 +24,36 @@ class AlbumentationsForYoloTask(Task):
     ----------
     transform : albumentations.Compose
         The composition of augmentation transformations to apply to images and bounding boxes.
-    """
+
+Example YAML:
+```yaml
+- name: albumentations_for_yolo
+  params:
+    input_images_dir: <value>
+    input_labels_dir: <value>
+    output_images_dir: <value>
+    output_labels_dir: <value>
+```
+
+Example YAML:
+```yaml
+- name: albumentations_for_yolo
+  params:
+    input_images_dir: <value>
+    input_labels_dir: <value>
+    output_images_dir: <value>
+    output_labels_dir: <value>
+```
+
+Example YAML:
+```yaml
+- name: albumentations_for_yolo
+  params:
+    input_images_dir: <value>
+    input_labels_dir: <value>
+    output_images_dir: <value>
+    output_labels_dir: <value>
+```"""
 
     name = "albumentations_for_yolo"
     def __init__(self, params):

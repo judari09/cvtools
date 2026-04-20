@@ -66,7 +66,40 @@ def resize_images(source_folder, destination_folder, target_width, target_height
 
 
 class ResizeFolderTask(Task):
-    """Tarea para analizar y redimensionar imágenes en una carpeta."""
+    """Tarea para analizar y redimensionar imágenes en una carpeta.
+
+Example YAML:
+```yaml
+- name: resize_folder
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+    width: <value>
+    height: <value>
+    do_resize: <value>
+```
+
+Example YAML:
+```yaml
+- name: resize_folder
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+    width: <value>
+    height: <value>
+    do_resize: <value>
+```
+
+Example YAML:
+```yaml
+- name: resize_folder
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+    width: <value>
+    height: <value>
+    do_resize: <value>
+```"""
 
     name = "resize_folder"
 

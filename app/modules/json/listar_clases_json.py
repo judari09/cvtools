@@ -16,6 +16,15 @@ except ImportError:
 
 
 class ListarClasesJsonTask(Task):
+    """Tarea para listar_clases_json.
+
+Example YAML:
+```yaml
+- name: listar_clases_json
+  params:
+    folder_path: <value>
+```"""
+
     
     name = "listar_clases_json"
     

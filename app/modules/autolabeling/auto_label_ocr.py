@@ -9,8 +9,7 @@ except ImportError:
 
 
 class AutoLabelOcrTask(Task):
-    """
-    Task for auto-labeling images using OCR (Optical Character Recognition).
+    """Task for auto-labeling images using OCR (Optical Character Recognition).
 
     This class extends the base Task class to perform OCR on images in a specified input directory,
     generating a text file with the detected text for each image. It uses the PaddleOCR library
@@ -20,7 +19,30 @@ class AutoLabelOcrTask(Task):
     ----------
     ocr : PaddleOCR
         An instance of the PaddleOCR class for performing OCR on images.
-    """
+
+Example YAML:
+```yaml
+- name: auto_label_ocr
+  params:
+    input_folder: <value>
+    output_file: <value>
+```
+
+Example YAML:
+```yaml
+- name: auto_label_ocr
+  params:
+    input_folder: <value>
+    output_file: <value>
+```
+
+Example YAML:
+```yaml
+- name: auto_label_ocr
+  params:
+    input_folder: <value>
+    output_file: <value>
+```"""
 
     name = "auto_label_ocr"
     

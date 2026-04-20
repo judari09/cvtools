@@ -70,7 +70,46 @@ def split_and_save(crops, output_dir, split_ratio, seed):
 
 
 class YoloCropDatasetTask(Task):
-    """Tarea para recortar placas con YOLO y generar dataset OCR."""
+    """Tarea para recortar placas con YOLO y generar dataset OCR.
+
+Example YAML:
+```yaml
+- name: yolo_crop_dataset
+  params:
+    input: <value>
+    model: <value>
+    output: <value>
+    conf: <value>
+    padding: <value>
+    split: <value>
+    seed: <value>
+```
+
+Example YAML:
+```yaml
+- name: yolo_crop_dataset
+  params:
+    input: <value>
+    model: <value>
+    output: <value>
+    conf: <value>
+    padding: <value>
+    split: <value>
+    seed: <value>
+```
+
+Example YAML:
+```yaml
+- name: yolo_crop_dataset
+  params:
+    input: <value>
+    model: <value>
+    output: <value>
+    conf: <value>
+    padding: <value>
+    split: <value>
+    seed: <value>
+```"""
 
     name = "yolo_crop_dataset"
 

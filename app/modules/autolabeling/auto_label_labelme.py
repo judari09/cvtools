@@ -20,9 +20,8 @@ except ImportError:
 class _TimeoutError(Exception):
     pass
 
-class AutoLabelLabelMeTask(Task):
-    """
-    Task for auto-labeling images using YOLO models and generating LabelMe JSON annotations.
+class AutoLabelLabelmeTask(Task):
+    """Task for auto-labeling images using YOLO models and generating LabelMe JSON annotations.
 
     This class extends the base Task class to perform automatic labeling of images
     using segmentation and detection YOLO models, optionally refining with SAM.
@@ -32,7 +31,22 @@ class AutoLabelLabelMeTask(Task):
     ----------
     params : object
         Configuration parameters for the task.
-    """
+
+Example YAML:
+```yaml
+- name: auto_label_labelme
+  params:
+    input: <value>
+    output: <value>
+    models: <value>
+    det_models: <value>
+    sam_model: <value>
+    conf: <value>
+    class_map: <value>
+    epsilon: <value>
+    use_sam: <value>
+```
+```"""
 
     name = "auto_label_labelme"
     def __init__(self, params):

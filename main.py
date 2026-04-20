@@ -20,28 +20,6 @@ from app.modules.general.yolo_crop_dataset import YoloCropDatasetTask
 
 
 # Crear una tarea de ejemplo
-class ResizeImagesTask(Task):
-    name = "resize_images"
-    
-    def __init__(self, params):
-        super().__init__(name="resize_images", params=params)
-    
-    def run(self):
-        print(f"Ejecutando tarea: {self.name}")
-        print(f"Parámetros: {self.params}")
-        print("✓ Imágenes redimensionadas correctamente")
-
-
-class ConvertFormatTask(Task):
-    name = "convert_format"
-    
-    def __init__(self, params):
-        super().__init__(name="convert_format", params=params)
-    
-    def run(self):
-        print(f"Ejecutando tarea: {self.name}")
-        print(f"Parámetros: {self.params}")
-        print("✓ Formato convertido correctamente")
 
 
 def main():
@@ -53,8 +31,6 @@ def main():
 
     # Mapa local de todas las clases disponibles (no cargadas en registro aun)
     available_tasks = {
-        ResizeImagesTask.name: ResizeImagesTask,
-        ConvertFormatTask.name: ConvertFormatTask,
         CheckIntegrityDatasetTask.name: CheckIntegrityDatasetTask,
         CheckModelClassesTask.name: CheckModelClassesTask,
         CheckSizesTask.name: CheckSizesTask,

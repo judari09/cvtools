@@ -16,8 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "code"))
 from src.ocr_plate import process_image
 
 class CopyAndRenameByPlateTask(Task):
-    """
-    Task for copying and renaming images based on detected license plates.
+    """Task for copying and renaming images based on detected license plates.
 
     This class extends the base Task class to process images, detect license plates
     using YOLO and ALPR OCR, and copy/rename images based on the detected plate text.
@@ -31,7 +30,33 @@ class CopyAndRenameByPlateTask(Task):
         ALPR instance for OCR on detected plates.
     valid_ext : tuple
         Valid image file extensions.
-    """
+
+Example YAML:
+```yaml
+- name: copy_and_rename_by_plate
+  params:
+    CROPPED_PLATES_DIR: <value>
+    OUTPUT_DIR: <value>
+    OUTPUT_DIR_NOREC: <value>
+```
+
+Example YAML:
+```yaml
+- name: copy_and_rename_by_plate
+  params:
+    CROPPED_PLATES_DIR: <value>
+    OUTPUT_DIR: <value>
+    OUTPUT_DIR_NOREC: <value>
+```
+
+Example YAML:
+```yaml
+- name: copy_and_rename_by_plate
+  params:
+    CROPPED_PLATES_DIR: <value>
+    OUTPUT_DIR: <value>
+    OUTPUT_DIR_NOREC: <value>
+```"""
 
     name = "copy_and_rename_by_plate"
     def __init__(self, params):

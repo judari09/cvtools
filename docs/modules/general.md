@@ -7,22 +7,28 @@ This page documents the `General Tools` available in CVTools.
 **Class:** `CheckIntegrityDatasetTask`
 
 Tarea para verificar integridad de imágenes y etiquetas YOLO.
+
+    Esta tarea revisa que cada imagen en un directorio tenga su etiqueta .txt
+    correspondiente en el directorio de etiquetas.
+
 Example YAML:
     ```yaml
-    - name: check_integrity_dataset
-      params:
-        # TODO: replace with task-specific parameters
-        example_param: value
+- name: check_integrity_dataset
+  params:
+    images_dir: <value>
+    labels_dir: <value>
+    output_window: <value>
     ```
 
 ### YAML example
 
-```yaml
+    ```yaml
 - name: check_integrity_dataset
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    images_dir: <value>
+    labels_dir: <value>
+    output_window: <value>
+    ```
 
 ## check_model_classes
 
@@ -30,14 +36,20 @@ Example YAML:
 
 Tarea para mostrar las clases de modelos YOLO.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: check_model_classes
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    models: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: check_model_classes
+  params:
+    models: <value>
+    ```
 
 ## check_sizes
 
@@ -45,14 +57,22 @@ Tarea para mostrar las clases de modelos YOLO.
 
 Tarea para comprobar el tamaño de imágenes en un directorio.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: check_sizes
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    folder_path: <value>
+    extensions: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: check_sizes
+  params:
+    folder_path: <value>
+    extensions: <value>
+    ```
 
 ## crop_images
 
@@ -60,14 +80,30 @@ Tarea para comprobar el tamaño de imágenes en un directorio.
 
 Tarea para recortar imágenes en un área fija.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: crop_images
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    input_folder: <value>
+    output_folder: <value>
+    x1: <value>
+    y1: <value>
+    x2: <value>
+    y2: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: crop_images
+  params:
+    input_folder: <value>
+    output_folder: <value>
+    x1: <value>
+    y1: <value>
+    x2: <value>
+    y2: <value>
+    ```
 
 ## extract_frames
 
@@ -75,14 +111,24 @@ Tarea para recortar imágenes en un área fija.
 
 Tarea para extraer frames de un video.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: extract_frames
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    video_path: <value>
+    output_folder: <value>
+    frame_step: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: extract_frames
+  params:
+    video_path: <value>
+    output_folder: <value>
+    frame_step: <value>
+    ```
 
 ## imagenes_db
 
@@ -90,14 +136,22 @@ Tarea para extraer frames de un video.
 
 Tarea para mover imágenes que tienen etiquetas TXT asociadas.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: imagenes_db
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    source_folder: <value>
+    destination_folder: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: imagenes_db
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+    ```
 
 ## move_to_comb
 
@@ -105,14 +159,24 @@ Tarea para mover imágenes que tienen etiquetas TXT asociadas.
 
 Tarea para copiar imágenes y etiquetas emparejadas a una carpeta combinada.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: move_to_comb
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    image_folder: <value>
+    label_folder: <value>
+    destination_folder: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: move_to_comb
+  params:
+    image_folder: <value>
+    label_folder: <value>
+    destination_folder: <value>
+    ```
 
 ## prepare_images_to_dataset
 
@@ -120,14 +184,32 @@ Tarea para copiar imágenes y etiquetas emparejadas a una carpeta combinada.
 
 Tarea para crear un dataset de placas a partir de LabelMe.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: prepare_images_to_dataset
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    input_dir: <value>
+    output_dir: <value>
+    target_width: <value>
+    target_height: <value>
+    split_ratio: <value>
+    padding: <value>
+    mode: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: prepare_images_to_dataset
+  params:
+    input_dir: <value>
+    output_dir: <value>
+    target_width: <value>
+    target_height: <value>
+    split_ratio: <value>
+    padding: <value>
+    mode: <value>
+    ```
 
 ## resize_folder
 
@@ -135,14 +217,28 @@ Tarea para crear un dataset de placas a partir de LabelMe.
 
 Tarea para analizar y redimensionar imágenes en una carpeta.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: resize_folder
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    source_folder: <value>
+    destination_folder: <value>
+    width: <value>
+    height: <value>
+    do_resize: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: resize_folder
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+    width: <value>
+    height: <value>
+    do_resize: <value>
+    ```
 
 ## separar_train_val
 
@@ -150,14 +246,26 @@ Tarea para analizar y redimensionar imágenes en una carpeta.
 
 Tarea para separar un conjunto en train y validation.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: separar_train_val
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    source_folder: <value>
+    train_folder: <value>
+    val_folder: <value>
+    split_ratio: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: separar_train_val
+  params:
+    source_folder: <value>
+    train_folder: <value>
+    val_folder: <value>
+    split_ratio: <value>
+    ```
 
 ## unir_videos
 
@@ -165,14 +273,26 @@ Tarea para separar un conjunto en train y validation.
 
 Tarea para unir múltiples videos en un solo archivo.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: unir_videos
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    source_folder: <value>
+    output_path: <value>
+    target_width: <value>
+    target_height: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: unir_videos
+  params:
+    source_folder: <value>
+    output_path: <value>
+    target_width: <value>
+    target_height: <value>
+    ```
 
 ## visualize_dataset
 
@@ -180,14 +300,28 @@ Tarea para unir múltiples videos en un solo archivo.
 
 Tarea para visualizar y analizar datasets de placas OCR.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: visualize_dataset
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    dataset_dir: <value>
+    num_samples: <value>
+    random_sample: <value>
+    show_train: <value>
+    show_val: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: visualize_dataset
+  params:
+    dataset_dir: <value>
+    num_samples: <value>
+    random_sample: <value>
+    show_train: <value>
+    show_val: <value>
+    ```
 
 ## yolo_crop_dataset
 
@@ -195,11 +329,30 @@ Tarea para visualizar y analizar datasets de placas OCR.
 
 Tarea para recortar placas con YOLO y generar dataset OCR.
 
-### YAML example
-
-```yaml
+Example YAML:
+    ```yaml
 - name: yolo_crop_dataset
   params:
-    # TODO: replace with task-specific parameters
-    example_param: value
-```
+    input: <value>
+    model: <value>
+    output: <value>
+    conf: <value>
+    padding: <value>
+    split: <value>
+    seed: <value>
+    ```
+
+### YAML example
+
+    ```yaml
+- name: yolo_crop_dataset
+  params:
+    input: <value>
+    model: <value>
+    output: <value>
+    conf: <value>
+    padding: <value>
+    split: <value>
+    seed: <value>
+    ```
+

@@ -14,6 +14,17 @@ except ImportError:
 
 # Mapeo de clases
 class Json2TxtTask(Task):
+    """Tarea para json2txt.
+
+Example YAML:
+```yaml
+- name: json2txt
+  params:
+    input_dir: <value>
+    output_dir: <value>
+    carpeta_imagenes: <value>
+```"""
+
     
     name = "json2txt"
     

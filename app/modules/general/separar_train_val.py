@@ -56,7 +56,37 @@ def separar_datos(source_folder, train_folder, val_folder, split_ratio=0.8):
 
 
 class SepararTrainValTask(Task):
-    """Tarea para separar un conjunto en train y validation."""
+    """Tarea para separar un conjunto en train y validation.
+
+Example YAML:
+```yaml
+- name: separar_train_val
+  params:
+    source_folder: <value>
+    train_folder: <value>
+    val_folder: <value>
+    split_ratio: <value>
+```
+
+Example YAML:
+```yaml
+- name: separar_train_val
+  params:
+    source_folder: <value>
+    train_folder: <value>
+    val_folder: <value>
+    split_ratio: <value>
+```
+
+Example YAML:
+```yaml
+- name: separar_train_val
+  params:
+    source_folder: <value>
+    train_folder: <value>
+    val_folder: <value>
+    split_ratio: <value>
+```"""
 
     name = "separar_train_val"
 

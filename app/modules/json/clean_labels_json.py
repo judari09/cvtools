@@ -9,8 +9,7 @@ except ImportError:
 
 
 class CleanLabelsJsonTask(Task):
-    """
-    Task for cleaning specific fields in JSON label files.
+    """Task for cleaning specific fields in JSON label files.
 
     This class extends the base Task class to modify JSON files by setting
     specified fields to given values, typically used for cleaning up
@@ -20,7 +19,33 @@ class CleanLabelsJsonTask(Task):
     ----------
     params : object
         Configuration parameters including folder_path, field, and value.
-    """
+
+Example YAML:
+```yaml
+- name: clean_labels_json
+  params:
+    folder_path: <value>
+    field: <value>
+    value: <value>
+```
+
+Example YAML:
+```yaml
+- name: clean_labels_json
+  params:
+    folder_path: <value>
+    field: <value>
+    value: <value>
+```
+
+Example YAML:
+```yaml
+- name: clean_labels_json
+  params:
+    folder_path: <value>
+    field: <value>
+    value: <value>
+```"""
 
     name = "clean_labels_json"
 

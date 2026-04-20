@@ -12,6 +12,21 @@ except ImportError:
 
 
 class OptimizePolygonsJsonTask(Task):
+    """Tarea para optimize_polygons_json.
+
+Example YAML:
+```yaml
+- name: optimize_polygons_json
+  params:
+    folder_path: <value>
+    epsilon: <value>
+    min_points: <value>
+    min_dist: <value>
+    smooth: <value>
+    smooth_window: <value>
+    target_label: <value>
+```"""
+
     name = "optimize_polygons_json"
     def __init__(self, params):
         """Initialize the OptimizePolygonsJsonTask.

@@ -26,8 +26,7 @@ except ImportError:
 #   Tier BAJO    (clase escasa):     leve×5  mod×4  agr×3  → 12 copias
 # ---------------------------------------------------------------------------
 class AlbumentationsForYolosegTask(Task):
-    """
-    Task for applying data augmentation to YOLO segmentation datasets using Albumentations.
+    """Task for applying data augmentation to YOLO segmentation datasets using Albumentations.
 
     This class extends the base Task class to perform image and polygon augmentation
     specifically tailored for YOLO segmentation models. It applies tiered augmentation
@@ -38,7 +37,36 @@ class AlbumentationsForYolosegTask(Task):
     ----------
     KP_PARAMS : albumentations.KeypointParams
         Parameters for keypoint handling in augmentations.
-    """
+
+Example YAML:
+```yaml
+- name: albumentations_for_yoloseg
+  params:
+    input_images_dir: <value>
+    input_labels_dir: <value>
+    output_images_dir: <value>
+    output_labels_dir: <value>
+```
+
+Example YAML:
+```yaml
+- name: albumentations_for_yoloseg
+  params:
+    input_images_dir: <value>
+    input_labels_dir: <value>
+    output_images_dir: <value>
+    output_labels_dir: <value>
+```
+
+Example YAML:
+```yaml
+- name: albumentations_for_yoloseg
+  params:
+    input_images_dir: <value>
+    input_labels_dir: <value>
+    output_images_dir: <value>
+    output_labels_dir: <value>
+```"""
 
     name = "albumentations_for_yoloseg"
     def __init__(self, params):

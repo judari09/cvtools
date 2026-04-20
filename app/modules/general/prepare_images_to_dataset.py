@@ -224,7 +224,46 @@ def process_dataset(
 
 
 class PrepareImagesToDatasetTask(Task):
-    """Tarea para crear un dataset de placas a partir de LabelMe."""
+    """Tarea para crear un dataset de placas a partir de LabelMe.
+
+Example YAML:
+```yaml
+- name: prepare_images_to_dataset
+  params:
+    input_dir: <value>
+    output_dir: <value>
+    target_width: <value>
+    target_height: <value>
+    split_ratio: <value>
+    padding: <value>
+    mode: <value>
+```
+
+Example YAML:
+```yaml
+- name: prepare_images_to_dataset
+  params:
+    input_dir: <value>
+    output_dir: <value>
+    target_width: <value>
+    target_height: <value>
+    split_ratio: <value>
+    padding: <value>
+    mode: <value>
+```
+
+Example YAML:
+```yaml
+- name: prepare_images_to_dataset
+  params:
+    input_dir: <value>
+    output_dir: <value>
+    target_width: <value>
+    target_height: <value>
+    split_ratio: <value>
+    padding: <value>
+    mode: <value>
+```"""
 
     name = "prepare_images_to_dataset"
 

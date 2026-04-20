@@ -65,7 +65,33 @@ class CheckIntegrityDatasetTask(Task):
 
     Esta tarea revisa que cada imagen en un directorio tenga su etiqueta .txt
     correspondiente en el directorio de etiquetas.
-    """
+
+Example YAML:
+```yaml
+- name: check_integrity_dataset
+  params:
+    images_dir: <value>
+    labels_dir: <value>
+    output_window: <value>
+```
+
+Example YAML:
+```yaml
+- name: check_integrity_dataset
+  params:
+    images_dir: <value>
+    labels_dir: <value>
+    output_window: <value>
+```
+
+Example YAML:
+```yaml
+- name: check_integrity_dataset
+  params:
+    images_dir: <value>
+    labels_dir: <value>
+    output_window: <value>
+```"""
 
     name = "check_integrity_dataset"
 

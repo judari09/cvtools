@@ -9,7 +9,31 @@ from app.core.task import Task
 
 
 class CheckSizesTask(Task):
-    """Tarea para comprobar el tamaño de imágenes en un directorio."""
+    """Tarea para comprobar el tamaño de imágenes en un directorio.
+
+Example YAML:
+```yaml
+- name: check_sizes
+  params:
+    folder_path: <value>
+    extensions: <value>
+```
+
+Example YAML:
+```yaml
+- name: check_sizes
+  params:
+    folder_path: <value>
+    extensions: <value>
+```
+
+Example YAML:
+```yaml
+- name: check_sizes
+  params:
+    folder_path: <value>
+    extensions: <value>
+```"""
 
     name = "check_sizes"
 

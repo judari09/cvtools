@@ -36,7 +36,31 @@ def mover_imagenes_con_txt(source_folder, destination_folder):
 
 
 class ImagenesDbTask(Task):
-    """Tarea para mover imágenes que tienen etiquetas TXT asociadas."""
+    """Tarea para mover imágenes que tienen etiquetas TXT asociadas.
+
+Example YAML:
+```yaml
+- name: imagenes_db
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+```
+
+Example YAML:
+```yaml
+- name: imagenes_db
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+```
+
+Example YAML:
+```yaml
+- name: imagenes_db
+  params:
+    source_folder: <value>
+    destination_folder: <value>
+```"""
 
     name = "imagenes_db"
 

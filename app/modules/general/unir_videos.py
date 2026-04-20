@@ -55,7 +55,37 @@ def merge_videos(video_paths, output_path, target_width=None, target_height=None
 
 
 class UnirVideosTask(Task):
-    """Tarea para unir múltiples videos en un solo archivo."""
+    """Tarea para unir múltiples videos en un solo archivo.
+
+Example YAML:
+```yaml
+- name: unir_videos
+  params:
+    source_folder: <value>
+    output_path: <value>
+    target_width: <value>
+    target_height: <value>
+```
+
+Example YAML:
+```yaml
+- name: unir_videos
+  params:
+    source_folder: <value>
+    output_path: <value>
+    target_width: <value>
+    target_height: <value>
+```
+
+Example YAML:
+```yaml
+- name: unir_videos
+  params:
+    source_folder: <value>
+    output_path: <value>
+    target_width: <value>
+    target_height: <value>
+```"""
 
     name = "unir_videos"
 

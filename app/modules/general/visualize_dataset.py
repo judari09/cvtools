@@ -73,7 +73,40 @@ def get_dataset_stats(train_dir, val_dir):
 
 
 class VisualizeDatasetTask(Task):
-    """Tarea para visualizar y analizar datasets de placas OCR."""
+    """Tarea para visualizar y analizar datasets de placas OCR.
+
+Example YAML:
+```yaml
+- name: visualize_dataset
+  params:
+    dataset_dir: <value>
+    num_samples: <value>
+    random_sample: <value>
+    show_train: <value>
+    show_val: <value>
+```
+
+Example YAML:
+```yaml
+- name: visualize_dataset
+  params:
+    dataset_dir: <value>
+    num_samples: <value>
+    random_sample: <value>
+    show_train: <value>
+    show_val: <value>
+```
+
+Example YAML:
+```yaml
+- name: visualize_dataset
+  params:
+    dataset_dir: <value>
+    num_samples: <value>
+    random_sample: <value>
+    show_train: <value>
+    show_val: <value>
+```"""
 
     name = "visualize_dataset"
 
