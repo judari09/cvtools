@@ -1,120 +1,90 @@
-# Autolabeling Tools
+# Auto-etiquetado
 
-This page documents the `Autolabeling Tools` available in CVTools.
+Módulos para generar anotaciones automáticamente usando modelos YOLO, SAM y OCR.
+
+---
 
 ## auto_label_labelme
 
-**Class:** `AutoLabelLabelmeTask`
+**Clase:** `AutoLabelLabelmeTask`
 
-Task for auto-labeling images using YOLO models and generating LabelMe JSON annotations.
+Etiqueta imágenes automáticamente usando modelos YOLO de segmentación y detección, con refinamiento opcional mediante SAM. Genera archivos JSON compatibles con LabelMe.
 
-    This class extends the base Task class to perform automatic labeling of images
-    using segmentation and detection YOLO models, optionally refining with SAM.
-    Generates LabelMe-compatible JSON files with polygon annotations.
+### Parámetros YAML
 
-    Attributes
-    ----------
-    params : object
-        Configuration parameters for the task.
-
-Example YAML:
-    ```yaml
+```yaml
 - name: auto_label_labelme
   params:
-    input: <value>
-    output: <value>
-    models: <value>
-    det_models: <value>
-    sam_model: <value>
-    conf: <value>
-    class_map: <value>
-    epsilon: <value>
-    use_sam: <value>
-    ```
+    input: data/images
+    output: data/labels/json
+    models:
+      - yolov8n-seg.pt
+    det_models:
+      - yolov8n.pt
+    sam_model: sam_b.pt
+    conf: 0.5
+    class_map:
+      car: 0
+      plate: 1
+    epsilon: 2.0
+    use_sam: false
+```
 
-### YAML example
+### CLI
 
-    ```yaml
-- name: auto_label_labelme
-  params:
-    input: <value>
-    output: <value>
-    models: <value>
-    det_models: <value>
-    sam_model: <value>
-    conf: <value>
-    class_map: <value>
-    epsilon: <value>
-    use_sam: <value>
-    ```
+```bash
+python -m app.modules.autolabeling.auto_label_labelme \
+  --models yolov8n-seg.pt \
+  --input data/images \
+  --output data/labels/json \
+  --conf 0.5
+```
+
+---
 
 ## auto_label_ocr
 
-**Class:** `AutoLabelOcrTask`
+**Clase:** `AutoLabelOcrTask`
 
-Task for auto-labeling images using OCR (Optical Character Recognition).
+Realiza OCR sobre imágenes usando PaddleOCR y genera un archivo de texto con el resultado por imagen.
 
-    This class extends the base Task class to perform OCR on images in a specified input directory,
-    generating a text file with the detected text for each image. It uses the PaddleOCR library
-    to perform text detection and recognition.
+!!! note "Dependencia opcional"
+    Requiere `pip install -e ".[ocr]"` para instalar PaddleOCR.
 
-    Attributes
-    ----------
-    ocr : PaddleOCR
-        An instance of the PaddleOCR class for performing OCR on images.
+### Parámetros YAML
 
-Example YAML:
-    ```yaml
+```yaml
 - name: auto_label_ocr
   params:
-    input_folder: <value>
-    output_file: <value>
-    ```
+    input_folder: data/images
+    output_file: data/ocr_results.txt
+```
 
-### YAML example
+### CLI
 
-    ```yaml
-- name: auto_label_ocr
-  params:
-    input_folder: <value>
-    output_file: <value>
-    ```
+```bash
+python -m app.modules.autolabeling.auto_label_ocr \
+  --input-folder data/images \
+  --output-file data/ocr_results.txt
+```
+
+---
 
 ## copy_and_rename_by_plate
 
-**Class:** `CopyAndRenameByPlateTask`
+**Clase:** `CopyAndRenameByPlateTask`
 
-Task for copying and renaming images based on detected license plates.
+Detecta placas vehiculares con YOLO y Fast-ALPR, luego copia y renombra las imágenes con el texto de la placa detectada.
 
-    This class extends the base Task class to process images, detect license plates
-    using YOLO and ALPR OCR, and copy/rename images based on the detected plate text.
-    It also crops and resizes detected plates to a standard size.
+!!! note "Dependencia opcional"
+    Requiere `pip install -e ".[ocr]"` para instalar Fast-ALPR.
 
-    Attributes
-    ----------
-    plate_detector_model : YOLO
-        YOLO model for license plate detection.
-    reader_alpr_ocr : ALPR
-        ALPR instance for OCR on detected plates.
-    valid_ext : tuple
-        Valid image file extensions.
+### Parámetros YAML
 
-Example YAML:
-    ```yaml
+```yaml
 - name: copy_and_rename_by_plate
   params:
-    CROPPED_PLATES_DIR: <value>
-    OUTPUT_DIR: <value>
-    OUTPUT_DIR_NOREC: <value>
-    ```
-
-### YAML example
-
-    ```yaml
-- name: copy_and_rename_by_plate
-  params:
-    CROPPED_PLATES_DIR: <value>
-    OUTPUT_DIR: <value>
-    OUTPUT_DIR_NOREC: <value>
-    ```
-
+    CROPPED_PLATES_DIR: data/plates_crop
+    OUTPUT_DIR: data/renamed
+    OUTPUT_DIR_NOREC: data/no_recognized
+```

@@ -1,78 +1,61 @@
-# Albumentations Tools
+# Aumentación de datos
 
-This page documents the `Albumentations Tools` available in CVTools.
+Módulos para aplicar transformaciones de datos con [Albumentations](https://albumentations.ai/) sobre datasets YOLO.
+
+---
 
 ## albumentations_for_yolo
 
-**Class:** `AlbumentationsForYoloTask`
+**Clase:** `AlbumentationsForYoloTask`
 
-Task for applying data augmentation to YOLO-formatted datasets using Albumentations.
+Aplica aumentaciones de imagen y bounding box sobre datasets en formato YOLO detección. Genera múltiples versiones aumentadas de cada imagen con sus coordenadas actualizadas.
 
-    This class extends the base Task class to perform image and bounding box augmentations
-    specifically tailored for YOLO object detection models. It applies a series of transformations
-    to input images and their corresponding label files, generating multiple augmented versions
-    of each image with updated bounding box coordinates.
+### Parámetros YAML
 
-    Attributes
-    ----------
-    transform : albumentations.Compose
-        The composition of augmentation transformations to apply to images and bounding boxes.
-
-Example YAML:
-    ```yaml
+```yaml
 - name: albumentations_for_yolo
   params:
-    input_images_dir: <value>
-    input_labels_dir: <value>
-    output_images_dir: <value>
-    output_labels_dir: <value>
-    ```
+    input_images_dir: data/images
+    input_labels_dir: data/labels
+    output_images_dir: data/aug/images
+    output_labels_dir: data/aug/labels
+```
 
-### YAML example
+### CLI
 
-    ```yaml
-- name: albumentations_for_yolo
-  params:
-    input_images_dir: <value>
-    input_labels_dir: <value>
-    output_images_dir: <value>
-    output_labels_dir: <value>
-    ```
+```bash
+python -m app.modules.albumentations.albumentations_for_yolo \
+  --input-images-dir data/images \
+  --input-labels-dir data/labels \
+  --output-images-dir data/aug/images \
+  --output-labels-dir data/aug/labels
+```
+
+---
 
 ## albumentations_for_yoloseg
 
-**Class:** `AlbumentationsForYolosegTask`
+**Clase:** `AlbumentationsForYolosegTask`
 
-Task for applying data augmentation to YOLO segmentation datasets using Albumentations.
+Aplica aumentaciones sobre datasets YOLO segmentación con polígonos. Usa estrategias de aumentación por niveles según la frecuencia de clase para balancear el dataset.
 
-    This class extends the base Task class to perform image and polygon augmentation
-    specifically tailored for YOLO segmentation models. It applies tiered augmentation
-    strategies based on class frequency to balance the dataset, generating multiple
-    augmented versions of each image with updated polygon coordinates.
+### Parámetros YAML
 
-    Attributes
-    ----------
-    KP_PARAMS : albumentations.KeypointParams
-        Parameters for keypoint handling in augmentations.
-
-Example YAML:
-    ```yaml
+```yaml
 - name: albumentations_for_yoloseg
   params:
-    input_images_dir: <value>
-    input_labels_dir: <value>
-    output_images_dir: <value>
-    output_labels_dir: <value>
-    ```
+    input_images_dir: data/images
+    input_labels_dir: data/labels
+    output_images_dir: data/aug/images
+    output_labels_dir: data/aug/labels
+```
 
-### YAML example
+### CLI
 
-    ```yaml
-- name: albumentations_for_yoloseg
-  params:
-    input_images_dir: <value>
-    input_labels_dir: <value>
-    output_images_dir: <value>
-    output_labels_dir: <value>
-    ```
-
+```bash
+python -m app.modules.albumentations.albumentations_for_yoloseg \
+  --input-images-dir data/images \
+  --input-labels-dir data/labels \
+  --output-images-dir data/aug/images \
+  --output-labels-dir data/aug/labels
+```
