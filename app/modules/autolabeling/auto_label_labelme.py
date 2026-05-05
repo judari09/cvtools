@@ -3,17 +3,20 @@ import argparse
 import numpy as np
 import json
 import tempfile
-import signal
 import contextlib
 import cv2
 from ultralytics import YOLO
 from tqdm import tqdm
 try:
     from app.core.task import Task
+    from app.utils.polygon_utils import simplify_polygon as _simplify_polygon
+    from app.utils.image_utils import validate_image as _validate_image
 except ImportError:
-    import os, sys
+    import sys
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
     from app.core.task import Task
+    from app.utils.polygon_utils import simplify_polygon as _simplify_polygon
+    from app.utils.image_utils import validate_image as _validate_image
 
 
 
@@ -66,7 +69,8 @@ Example YAML:
     @contextlib.contextmanager
     def timeout(self, seconds):
         """
-        Context manager that raises _TimeoutError if the block exceeds 'seconds' seconds.
+        Context manager que lanza _TimeoutError si el bloque supera 'seconds' segundos.
+        Solo funciona en Unix (SIGALRM); en Windows es un no-op.
 
         Parameters
         ----------
@@ -77,78 +81,30 @@ Example YAML:
         ------
         None
         """
+        import signal as _signal
+        if not hasattr(_signal, "SIGALRM"):
+            yield
+            return
+
         def _handler(signum, frame):
             raise _TimeoutError(f"Timeout tras {seconds}s")
 
-        old_handler = signal.signal(signal.SIGALRM, _handler)
-        signal.alarm(seconds)
+        old_handler = _signal.signal(_signal.SIGALRM, _handler)
+        _signal.alarm(seconds)
         try:
             yield
         finally:
-            signal.alarm(0)
-            signal.signal(signal.SIGALRM, old_handler)
+            _signal.alarm(0)
+            _signal.signal(_signal.SIGALRM, old_handler)
 
 
     def validate_image(self, image_path):
-        """
-        Validate that the image is fully readable and decodable.
-
-        Parameters
-        ----------
-        image_path : str
-            Path to the image file.
-
-        Returns
-        -------
-        numpy.ndarray or None
-            BGR image array if valid, None if corrupted.
-        """
-        try:
-            img = cv2.imread(image_path)
-            if img is None:
-                return None
-            # Forzar decodificación completa: codificar de vuelta a PNG en memoria
-            ok, _ = cv2.imencode(".png", img)
-            if not ok:
-                return None
-            return img
-        except Exception:
-            return None
-
+        """Validate that the image is fully readable and decodable."""
+        return _validate_image(image_path)
 
     def simplify_polygon(self, points, epsilon=2.0, min_points=5):
-        """
-        Simplify a polygon using Douglas-Peucker algorithm.
-
-        Parameters
-        ----------
-        points : list of list
-            List of [x, y] points.
-        epsilon : float, optional
-            Tolerance for simplification in pixels. Default is 2.0.
-        min_points : int, optional
-            Minimum number of points the polygon must have. Default is 5.
-
-        Returns
-        -------
-        list of list
-            Simplified polygon points.
-        """
-        if len(points) <= min_points:
-            return points  # ya cumple el mínimo
-
-        pts = np.array(points, dtype=np.float32)
-        contour = pts.reshape((-1, 1, 2))
-        approx = cv2.approxPolyDP(contour, epsilon, True)
-
-        approx_points = [[float(x), float(y)] for [x, y] in approx[:, 0, :]]
-
-        # Si se redujo demasiado, tomar puntos distribuidos del original
-        if len(approx_points) < min_points:
-            step = max(1, len(points) // min_points)
-            approx_points = points[::step][:min_points]
-
-        return approx_points
+        """Simplify a polygon using Douglas-Peucker algorithm."""
+        return _simplify_polygon(points, epsilon=epsilon, min_points=min_points)
 
     def load_models(self, seg_paths, det_paths=None, sam_path=None):
         """
@@ -461,6 +417,7 @@ Example YAML:
         sam_model_path=None,
         class_map=None,
         epsilon=2.0,
+        det_only=False,
     ):
         """
         Generate LabelMe JSON label files using predictions from multiple YOLO models + optional SAM.
@@ -485,6 +442,9 @@ Example YAML:
             Class mapping dictionary.
         epsilon : float, optional
             Polygon simplification epsilon. Default is 2.0.
+        det_only : bool, optional
+            Si True, todos los modelos (incluidos los de seg) se ejecutan en modo
+            detección y generan rectángulos en lugar de polígonos. Default es False.
 
         Notes
         -----
@@ -492,21 +452,20 @@ Example YAML:
         """
         os.makedirs(output_dir, exist_ok=True)
 
-        # Validación: modelos de detección requieren SAM
-        if det_model_paths and not use_sam:
-            print(
-                "ERROR: --det-models requiere --use-sam. "
-                "Los modelos de detección solo generan bboxes, "
-                "SAM es necesario para obtener las máscaras de segmentación."
+        # Cargar modelos: con det_only, los seg_paths se tratan como modelos de detección
+        if det_only:
+            all_det_paths = list(seg_model_paths or []) + list(det_model_paths or [])
+            seg_models, det_models, sam_model = self.load_models(
+                [],
+                det_paths=all_det_paths,
+                sam_path=None,
             )
-            return
-
-        # Cargar modelos
-        seg_models, det_models, sam_model = self.load_models(
-            seg_model_paths,
-            det_paths=det_model_paths,
-            sam_path=sam_model_path if use_sam else None,
-        )
+        else:
+            seg_models, det_models, sam_model = self.load_models(
+                seg_model_paths,
+                det_paths=det_model_paths,
+                sam_path=sam_model_path if use_sam else None,
+            )
 
         # Listar imágenes
         try:
@@ -570,27 +529,34 @@ Example YAML:
             for det in all_detections:
                 if det["label"] in existing_labels:
                     continue  # ya existe una anotación manual para este label
-                points = det["points"]
-                # points = simplify_polygon(det["points"], epsilon=epsilon, min_points=5)
+                if det["points"] is not None:
+                    # Segmentación o det+SAM → polígono
+                    shape_type = "polygon"
+                    points = det["points"]
+                else:
+                    # Detección sin SAM → rectángulo [[x1,y1],[x2,y2]]
+                    shape_type = "rectangle"
+                    x1, y1, x2, y2 = det["box"]
+                    points = [[x1, y1], [x2, y2]]
                 new_shapes.append(
                     {
                         "label": det["label"],
                         "points": points,
                         "group_id": None,
                         "description": "",
-                        "shape_type": "polygon",
+                        "shape_type": shape_type,
                         "flags": {},
                         "mask": None,
                     }
                 )
 
-            # Si el JSON ya existía y no hay shapes nuevas, no modificar
-            if existing_shapes and not new_shapes:
-                continue
+
 
             # Combinar: primero las manuales existentes, luego las nuevas
             all_shapes = existing_shapes + new_shapes
-
+            # Sin detecciones nuevas: no tocar nada
+            if not all_shapes:
+                continue
             try:
                 # Generar y guardar JSON
                 labelme_data = self.build_labelme_json(all_shapes, image_path, output_dir)
@@ -613,22 +579,19 @@ Example YAML:
 
 
     def run(self):
-        """
-        Execute the auto-labeling process using configured parameters.
-
-        Parses class map and calls auto_label_images with task parameters.
-        """
-        class_map = self.parse_class_map(self.params.class_map)
+        """Execute the auto-labeling process using configured parameters."""
+        class_map = self.parse_class_map(self.params.get("class_map", []))
         self.auto_label_images(
-            seg_model_paths=self.params.models,
-            input_dir=self.params.input,
-            output_dir=self.params.output,
-            conf=self.params.conf,
-            det_model_paths=self.params.det_models,
-            use_sam=self.params.use_sam,
-            sam_model_path=self.params.sam_model,
+            seg_model_paths=self.params.get("models", []),
+            input_dir=self.params.get("input"),
+            output_dir=self.params.get("output"),
+            conf=float(self.params.get("conf", 0.5)),
+            det_model_paths=self.params.get("det_models", []),
+            use_sam=bool(self.params.get("use_sam", False)),
+            sam_model_path=self.params.get("sam_model"),
             class_map=class_map,
-            epsilon=self.params.epsilon,
+            epsilon=float(self.params.get("epsilon", 2.0)),
+            det_only=bool(self.params.get("det_only", False)),
         )
 
 if __name__ == "__main__":
@@ -696,16 +659,22 @@ if __name__ == "__main__":
         default=2.0,
         help="Polygon simplification epsilon for mask shapes.",
     )
-    args = parser.parse_args()
-    params = argparse.Namespace(
-        models=args.models,
-        input=args.input,
-        output=args.output,
-        conf=args.conf,
-        det_models=args.det_models,
-        use_sam=args.use_sam,
-        sam_model=args.sam_model,
-        class_map=parse_class_map(args.class_map),
-        epsilon=args.epsilon,
+    parser.add_argument(
+        "--det-only",
+        action="store_true",
+        help="Forzar modo detección: todos los modelos generan rectángulos en lugar de polígonos.",
     )
-    AutoLabelLabelMeTask(params).run()
+    args = parser.parse_args()
+    params = {
+        "models": args.models,
+        "input": args.input,
+        "output": args.output,
+        "conf": args.conf,
+        "det_models": args.det_models,
+        "use_sam": args.use_sam,
+        "sam_model": args.sam_model,
+        "class_map": parse_class_map(args.class_map),
+        "epsilon": args.epsilon,
+        "det_only": args.det_only,
+    }
+    AutoLabelLabelmeTask(params).run()

@@ -8,24 +8,26 @@ import shutil
 from app.core.task import Task
 
 
-def mover_archivo(source_folder, filename, destination_folder):
+def mover_archivo(images_folder, labels_folder, filename, destination_folder):
     """Copia la imagen y su etiqueta correspondiente a la carpeta destino."""
     base_name, _ = os.path.splitext(filename)
-    image_source = os.path.join(source_folder, filename)
-    label_source = os.path.join(source_folder, base_name + ".txt")
+    image_source = os.path.join(images_folder, filename)
+    label_source = os.path.join(labels_folder, base_name + ".txt")
 
     shutil.copy2(image_source, os.path.join(destination_folder, "images", filename))
     if os.path.exists(label_source):
         shutil.copy2(label_source, os.path.join(destination_folder, "labels", base_name + ".txt"))
 
 
-def separar_datos(source_folder, train_folder, val_folder, split_ratio=0.8):
+def separar_datos(images_folder, labels_folder, train_folder, val_folder, split_ratio=0.8):
     """Separa imágenes en conjuntos de entrenamiento y validación.
 
     Parameters
     ----------
-    source_folder : str
-        Carpeta con imágenes y etiquetas TXT.
+    images_folder : str
+        Carpeta con las imágenes.
+    labels_folder : str
+        Carpeta con las etiquetas TXT.
     train_folder : str
         Carpeta de salida para train.
     val_folder : str
@@ -38,7 +40,7 @@ def separar_datos(source_folder, train_folder, val_folder, split_ratio=0.8):
         os.makedirs(os.path.join(folder, "labels"), exist_ok=True)
 
     archivos = [
-        f for f in os.listdir(source_folder)
+        f for f in os.listdir(images_folder)
         if f.lower().endswith(('.jpg', '.png', '.jpeg'))
     ]
     random.shuffle(archivos)
@@ -48,9 +50,9 @@ def separar_datos(source_folder, train_folder, val_folder, split_ratio=0.8):
     val_files = archivos[num_train:]
 
     for archivo in train_files:
-        mover_archivo(source_folder, archivo, train_folder)
+        mover_archivo(images_folder, labels_folder, archivo, train_folder)
     for archivo in val_files:
-        mover_archivo(source_folder, archivo, val_folder)
+        mover_archivo(images_folder, labels_folder, archivo, val_folder)
 
     print(f"Datos separados: {len(train_files)} en entrenamiento, {len(val_files)} en validación")
 
@@ -62,27 +64,8 @@ Example YAML:
 ```yaml
 - name: separar_train_val
   params:
-    source_folder: <value>
-    train_folder: <value>
-    val_folder: <value>
-    split_ratio: <value>
-```
-
-Example YAML:
-```yaml
-- name: separar_train_val
-  params:
-    source_folder: <value>
-    train_folder: <value>
-    val_folder: <value>
-    split_ratio: <value>
-```
-
-Example YAML:
-```yaml
-- name: separar_train_val
-  params:
-    source_folder: <value>
+    images_folder: <value>
+    labels_folder: <value>
     train_folder: <value>
     val_folder: <value>
     split_ratio: <value>
@@ -96,8 +79,8 @@ Example YAML:
         Parameters
         ----------
         params : dict
-            Debe incluir 'source_folder', 'train_folder', 'val_folder' y
-            opcionalmente 'split_ratio'.
+            Debe incluir 'images_folder', 'labels_folder', 'train_folder',
+            'val_folder' y opcionalmente 'split_ratio'.
         """
         super().__init__(name=self.name, params=params)
         self.params = params
@@ -105,7 +88,8 @@ Example YAML:
     def run(self):
         """Ejecuta la separación del dataset."""
         separar_datos(
-            self.params.get("source_folder"),
+            self.params.get("images_folder"),
+            self.params.get("labels_folder"),
             self.params.get("train_folder"),
             self.params.get("val_folder"),
             split_ratio=float(self.params.get("split_ratio", 0.8)),
@@ -114,7 +98,8 @@ Example YAML:
 
 def main():
     parser = argparse.ArgumentParser(description="Separa imágenes y etiquetas en train/val para YOLO")
-    parser.add_argument("--origen", required=True, help="Carpeta origen con imágenes y TXTs (comb)")
+    parser.add_argument("--images", required=True, help="Carpeta con las imágenes")
+    parser.add_argument("--labels", required=True, help="Carpeta con las etiquetas TXT")
     parser.add_argument("--train", required=True, help="Carpeta de salida train")
     parser.add_argument("--val", required=True, help="Carpeta de salida val")
     parser.add_argument(
@@ -127,7 +112,8 @@ def main():
 
     task = SepararTrainValTask(
         {
-            "source_folder": args.origen,
+            "images_folder": args.images,
+            "labels_folder": args.labels,
             "train_folder": args.train,
             "val_folder": args.val,
             "split_ratio": args.ratio,

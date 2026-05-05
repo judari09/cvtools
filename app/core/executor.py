@@ -55,6 +55,10 @@ class executor():
             if task_name in task_reg.task_registry:
                 task_class = task_reg.task_registry[task_name]
                 task = task_class(task_params)
-                task.run()
+                try:
+                    task.run()
+                except Exception as e:
+                    print(f"✗ Error en tarea '{task_name}': {type(e).__name__}: {e}")
+                    raise
             else:
                 print(f"⚠ Tarea '{task_name}' no está registrada; se omite.")

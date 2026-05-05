@@ -3,7 +3,7 @@ Corrige archivos JSON generados por auto_label_labelme.py para que sean
 completamente válidos y abribles en LabelMe.
 
 Correcciones aplicadas:
-  1. imagePath  → ruta relativa desde el directorio del JSON hasta la imagen
+  1. imagePath  → solo el nombre del archivo de imagen (sin rutas) para garantizar integridad del dataset
   2. version    → se actualiza a la versión indicada (default 5.10.1)
   3. imageHeight / imageWidth → int nativo de Python (no numpy)
   4. imageData  → null (evita archivos enormes con base64)
@@ -95,10 +95,10 @@ Example YAML:
 
     def run(self):
         self.fix_all_jsons(
-            labels_dir=self.params.labels_dir,
-            images_dir=self.params.images_dir,
-            version=self.params.version,
-            dry_run=self.params.dry_run,
+            labels_dir=self.params.get("labels_dir"),
+            images_dir=self.params.get("images_dir"),
+            version=self.params.get("version", "5.10.1"),
+            dry_run=self.params.get("dry_run", False),
         )
 
 
@@ -169,28 +169,25 @@ Example YAML:
             (fixed, message) where fixed is boolean indicating if changes were made,
             and message describes the changes.
         """
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            return None, "JSON inválido o vacío"
 
         json_dir = os.path.dirname(os.path.abspath(json_path))
         json_stem = os.path.splitext(os.path.basename(json_path))[0]
 
         changes = []
 
-        # --- 1. Corregir imagePath ---
+        # --- 1. Corregir imagePath (solo nombre de archivo, sin rutas) ---
         image_file = self.find_image_for_json(json_stem, images_dir)
-        if image_file:
-            rel_path = os.path.relpath(image_file, json_dir)
-            if data.get("imagePath") != rel_path:
-                changes.append(f"imagePath: '{data.get('imagePath')}' → '{rel_path}'")
-                data["imagePath"] = rel_path
-        else:
-            # Si no encuentra la imagen, intentar corregir solo si es ruta absoluta
-            current = data.get("imagePath", "")
-            if os.path.isabs(current):
-                rel = os.path.relpath(current, json_dir)
-                changes.append(f"imagePath (abs→rel): '{current}' → '{rel}'")
-                data["imagePath"] = rel
+        if image_file is None:
+            return None, "imagen no encontrada"
+        filename_only = os.path.basename(image_file)
+        if data.get("imagePath") != filename_only:
+            changes.append(f"imagePath: '{data.get('imagePath')}' → '{filename_only}'")
+            data["imagePath"] = filename_only
 
         # --- 2. Corregir version ---
         if data.get("version") != version:
@@ -260,16 +257,23 @@ Example YAML:
 
         total = len(json_files)
         fixed_count = 0
+        deleted_count = 0
 
         for json_path in json_files:
             fixed, msg = self.fix_json_file(json_path, images_dir, version, dry_run)
-            if fixed:
+            prefix = "[DRY-RUN] " if dry_run else ""
+            if fixed is None:
+                deleted_count += 1
+                print(f"{prefix}ELIMINADO {os.path.basename(json_path)}: {msg}")
+                if not dry_run:
+                    os.remove(json_path)
+            elif fixed:
                 fixed_count += 1
-                prefix = "[DRY-RUN] " if dry_run else ""
                 print(f"{prefix}{os.path.basename(json_path)}: {msg}")
 
         action = "se corregirían" if dry_run else "corregidos"
-        print(f"\nResumen: {fixed_count}/{total} archivos {action}")
+        action_del = "se eliminarían" if dry_run else "eliminados"
+        print(f"\nResumen: {fixed_count}/{total} archivos {action}, {deleted_count} {action_del} (sin imagen)")
 
 
 if __name__ == "__main__":
@@ -299,10 +303,10 @@ if __name__ == "__main__":
         help="Show changes without writing JSON files.",
     )
     args = parser.parse_args()
-    params = argparse.Namespace(
-        labels_dir=args.labels_dir,
-        images_dir=args.images_dir,
-        version=args.version,
-        dry_run=args.dry_run,
-    )
-    FixLabelMeJsonTask(params).run()
+    params = {
+        "labels_dir": args.labels_dir,
+        "images_dir": args.images_dir,
+        "version": args.version,
+        "dry_run": args.dry_run,
+    }
+    FixLabelmeJsonTask(params).run()

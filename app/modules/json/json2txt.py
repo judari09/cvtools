@@ -23,6 +23,7 @@ Example YAML:
     input_dir: <value>
     output_dir: <value>
     carpeta_imagenes: <value>
+    polygon_4pt_as_bbox: false
 ```"""
 
     
@@ -89,23 +90,8 @@ Example YAML:
         return self.FALLBACK_WIDTH, self.FALLBACK_HEIGHT, "fallback"
 
 
-    def convert_to_yolo_format(self, points, img_width, img_height):
-        """Convert list of points to normalized string for YOLO segmentation.
-
-        Parameters
-        ----------
-        points : list
-            List of [x, y] points.
-        img_width : int
-            Image width.
-        img_height : int
-            Image height.
-
-        Returns
-        -------
-        str
-            Space-separated normalized coordinates.
-        """
+    def convert_polygon_to_yolo(self, points, img_width, img_height):
+        """Convierte puntos de polígono a formato YOLO segmentación/OBB normalizado."""
         coords = []
         for point in points:
             x = point[0] / img_width
@@ -113,9 +99,54 @@ Example YAML:
             coords.append(f"{x:.6f} {y:.6f}")
         return " ".join(coords)
 
+    def convert_rectangle_to_yolo(self, points, img_width, img_height):
+        """Convierte dos puntos [[x1,y1],[x2,y2]] a formato YOLO detección cx cy w h."""
+        x1, y1 = points[0]
+        x2, y2 = points[1]
+        cx = ((x1 + x2) / 2) / img_width
+        cy = ((y1 + y2) / 2) / img_height
+        w = abs(x2 - x1) / img_width
+        h = abs(y2 - y1) / img_height
+        return f"{cx:.6f} {cy:.6f} {w:.6f} {h:.6f}"
 
-    def convertir_json_a_txt(self,input_dir, output_dir, carpeta_imagenes=None):
-        """Convert LabelMe JSON files to YOLO segmentation format (.txt).
+    def convert_4pt_polygon_to_bbox(self, points, img_width, img_height):
+        """Convierte un polígono de 4 puntos a bbox YOLO (cx cy w h) usando el AABB."""
+        xs = [p[0] for p in points]
+        ys = [p[1] for p in points]
+        cx = ((min(xs) + max(xs)) / 2) / img_width
+        cy = ((min(ys) + max(ys)) / 2) / img_height
+        w = (max(xs) - min(xs)) / img_width
+        h = (max(ys) - min(ys)) / img_height
+        return f"{cx:.6f} {cy:.6f} {w:.6f} {h:.6f}"
+
+    def convert_shape_to_yolo(self, shape, img_width, img_height, polygon_4pt_as_bbox=False):
+        """Despacha al conversor correcto según shape_type.
+
+        Parameters
+        ----------
+        polygon_4pt_as_bbox : bool
+            Si True, convierte polígonos de exactamente 4 puntos a bbox (detección).
+            Si False, los trata como polígono normalizado (segmentación / OBB).
+
+        Returns
+        -------
+        str or None
+            Línea de coordenadas YOLO, o None si el shape_type no es soportado.
+        """
+        shape_type = shape.get("shape_type", "polygon")
+        points = shape["points"]
+        if shape_type == "rectangle":
+            return self.convert_rectangle_to_yolo(points, img_width, img_height)
+        elif shape_type == "polygon":
+            if polygon_4pt_as_bbox and len(points) == 4:
+                return self.convert_4pt_polygon_to_bbox(points, img_width, img_height)
+            return self.convert_polygon_to_yolo(points, img_width, img_height)
+        else:
+            return None
+
+
+    def convertir_json_a_txt(self, input_dir, output_dir, carpeta_imagenes=None, polygon_4pt_as_bbox=False):
+        """Convert LabelMe JSON files to YOLO .txt format.
 
         Parameters
         ----------
@@ -125,6 +156,10 @@ Example YAML:
             Output directory for .txt files.
         carpeta_imagenes : str, optional
             Directory with images (default same as input_dir).
+        polygon_4pt_as_bbox : bool
+            If True, 4-point polygons are converted to axis-aligned bounding boxes
+            (cx cy w h) suitable for detection. If False, they are kept as normalized
+            polygon coordinates, useful for segmentation or OBB tasks.
         """
         if carpeta_imagenes is None:
             carpeta_imagenes = input_dir
@@ -157,10 +192,15 @@ Example YAML:
             with open(txt_filepath, "w") as txt_file:
                 for shape in data.get("shapes", []):
                     label = shape["label"]
-                    points = shape["points"]
-                    class_id = self.params.CLASS_MAP.get(label, self.params.DEFAULT_CLASS_ID)
-                    yolo_points = self.convert_to_yolo_format(points, img_width, img_height)
-                    txt_file.write(f"{class_id} {yolo_points}\n")
+                    class_id = self.params.get("class_map", {}).get(label, self.params.get("default_class_id", 0))
+                    yolo_coords = self.convert_shape_to_yolo(
+                        shape, img_width, img_height,
+                        polygon_4pt_as_bbox=polygon_4pt_as_bbox,
+                    )
+                    if yolo_coords is None:
+                        print(f"Advertencia: shape_type '{shape.get('shape_type')}' no soportado en {os.path.basename(json_file)}, se omite.")
+                        continue
+                    txt_file.write(f"{class_id} {yolo_coords}\n")
 
             convertidos += 1
 
@@ -169,12 +209,12 @@ Example YAML:
         print(f"Archivos guardados en: {output_dir}")
     
     def run(self):
-        """Run the JSON to TXT conversion task.
-        """
+        """Run the JSON to TXT conversion task."""
         self.convertir_json_a_txt(
-            input_dir=self.params.input_dir,
-            output_dir=self.params.output_dir,
-            carpeta_imagenes=self.params.carpeta_imagenes,
+            input_dir=self.params.get("input_dir"),
+            output_dir=self.params.get("output_dir"),
+            carpeta_imagenes=self.params.get("carpeta_imagenes"),
+            polygon_4pt_as_bbox=self.params.get("polygon_4pt_as_bbox", False),
         )
 
 
@@ -222,12 +262,23 @@ if __name__ == "__main__":
         default=0,
         help="Default class ID used for labels not found in class map.",
     )
-    args = parser.parse_args()
-    params = argparse.Namespace(
-        input_dir=args.input_dir,
-        output_dir=args.output_dir,
-        carpeta_imagenes=args.carpeta_imagenes or args.input_dir,
-        CLASS_MAP=parse_class_map(args.class_map),
-        DEFAULT_CLASS_ID=args.default_class_id,
+    parser.add_argument(
+        "--polygon-4pt-as-bbox",
+        action="store_true",
+        default=False,
+        help=(
+            "Convert 4-point polygons to axis-aligned bounding boxes (cx cy w h). "
+            "Use this for detection tasks. Without this flag, 4-point polygons are "
+            "kept as normalized polygon coordinates (segmentation / OBB)."
+        ),
     )
+    args = parser.parse_args()
+    params = {
+        "input_dir": args.input_dir,
+        "output_dir": args.output_dir,
+        "carpeta_imagenes": args.carpeta_imagenes or args.input_dir,
+        "class_map": parse_class_map(args.class_map),
+        "default_class_id": args.default_class_id,
+        "polygon_4pt_as_bbox": args.polygon_4pt_as_bbox,
+    }
     Json2TxtTask(params).run()

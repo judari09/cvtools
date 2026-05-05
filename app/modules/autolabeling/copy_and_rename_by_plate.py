@@ -1,5 +1,3 @@
-from fast_alpr import ALPR
-from ultralytics import YOLO
 import os
 import shutil
 import sys
@@ -7,13 +5,23 @@ import cv2
 try:
     from app.core.task import Task
 except ImportError:
-    import os, sys
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
     from app.core.task import Task
 
-# Agregar el path del código del proyecto para importar módulos
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "code"))
-from src.ocr_plate import process_image
+try:
+    from fast_alpr import ALPR
+    from ultralytics import YOLO
+    _DEPS_OK = True
+except ImportError:
+    _DEPS_OK = False
+
+try:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "code"))
+    from src.ocr_plate import process_image as _process_image
+    _OCR_OK = True
+except ImportError:
+    _OCR_OK = False
+    _process_image = None
 
 class CopyAndRenameByPlateTask(Task):
     """Task for copying and renaming images based on detected license plates.
@@ -65,22 +73,34 @@ Example YAML:
 
         Parameters
         ----------
-        params : object
-            Configuration parameters including OUTPUT_DIR, CROPPED_PLATES_DIR,
-            IMAGES_DIR, PLATE_MODEL_PATH, and OUTPUT_DIR_NOREC.
+        params : dict
+            Configuration parameters including output_dir, cropped_plates_dir,
+            images_dir, plate_model_path, and output_dir_norec.
         """
         super().__init__(name="copy_and_rename_by_plate", params=params)
         self.params = params
 
+        if not _DEPS_OK:
+            raise ImportError(
+                "Dependencias no instaladas. Instala: pip install fast-alpr ultralytics"
+            )
+        if not _OCR_OK:
+            raise ImportError(
+                "Módulo src.ocr_plate no encontrado. "
+                "Verifica que el módulo OCR esté disponible en el path del proyecto."
+            )
 
-        os.makedirs(self.params.OUTPUT_DIR, exist_ok=True)
-        os.makedirs(self.params.CROPPED_PLATES_DIR, exist_ok=True)
+        output_dir = self.params.get("output_dir") or self.params.get("OUTPUT_DIR")
+        cropped_dir = self.params.get("cropped_plates_dir") or self.params.get("CROPPED_PLATES_DIR")
+        model_path = self.params.get("plate_model_path") or self.params.get("PLATE_MODEL_PATH")
+
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(cropped_dir, exist_ok=True)
 
         self.valid_ext = (".jpg", ".jpeg", ".png")
 
-        # Inicializar modelos
         print("Cargando modelos...")
-        self.plate_detector_model = YOLO(self.params.PLATE_MODEL_PATH)
+        self.plate_detector_model = YOLO(model_path)
         self.reader_alpr_ocr = ALPR(
             ocr_model="global-plates-mobile-vit-v2-model",
             detector_model="yolo-v9-t-256-license-plate-end2end",
@@ -97,8 +117,9 @@ Example YAML:
         list of str
             List of paths to valid image files.
         """
+        images_dir = self.params.get("images_dir") or self.params.get("IMAGES_DIR")
         image_paths = []
-        for root, _, files in os.walk(self.params.IMAGES_DIR):
+        for root, _, files in os.walk(images_dir):
             for f in files:
                 if f.lower().endswith(self.valid_ext):
                     image_paths.append(os.path.join(root, f))
@@ -186,10 +207,11 @@ Example YAML:
                     if count > 1:
                         print(f"     {plate}: {count} veces")
 
-        # Rutas de salida
+        output_dir = self.params.get("output_dir") or self.params.get("OUTPUT_DIR")
+        cropped_dir = self.params.get("cropped_plates_dir") or self.params.get("CROPPED_PLATES_DIR")
         print(f"\n📁 ARCHIVOS GENERADOS")
-        print(f"  Imágenes completas:     {self.params.OUTPUT_DIR}")
-        print(f"  Placas recortadas (64x256): {self.params.CROPPED_PLATES_DIR}")
+        print(f"  Imágenes completas:     {output_dir}")
+        print(f"  Placas recortadas (64x256): {cropped_dir}")
 
         print(f"\n{'='*70}\n")
 
@@ -227,11 +249,12 @@ Example YAML:
         for image_path in image_paths:
             try:
                 # Llamar directamente al método de reconocimiento
-                result = process_image(
+                output_dir = self.params.get("output_dir") or self.params.get("OUTPUT_DIR")
+                result = _process_image(
                     image_path,
                     self.plate_detector_model,
                     self.reader_alpr_ocr,
-                    self.params.OUTPUT_DIR,
+                    output_dir,
                     show_results=False,
                     is_bike=False,
                     return_dict=True,
@@ -257,25 +280,21 @@ Example YAML:
                     #new_name = f"{plate}{ext}"
                     original_name = os.path.splitext(os.path.basename(image_path))[0]
                     new_name = original_name
-                    dest_path = os.path.join(self.params.OUTPUT_DIR, new_name)
+                    output_dir = self.params.get("output_dir") or self.params.get("OUTPUT_DIR")
+                    cropped_dir = self.params.get("cropped_plates_dir") or self.params.get("CROPPED_PLATES_DIR")
+                    dest_path = os.path.join(output_dir, new_name)
                     shutil.copy2(image_path, dest_path)
 
-                    # Recortar y guardar imagen de la placa si se detectó bbox
                     if bbox is not None:
                         stats["with_bbox"] += 1
                         x1, y1, x2, y2 = bbox
-                        # Leer imagen original
                         img = cv2.imread(image_path)
                         if img is not None:
-                            # Recortar la región de la placa
                             plate_crop = img[y1:y2, x1:x2]
-                            # Redimensionar a 64x256
                             plate_resized = cv2.resize(plate_crop, (256, 64))
-                            # Guardar imagen recortada
-                            #cropped_name = f"{plate}{ext}"
                             cropped_name = original_name
                             cropped_path = os.path.join(
-                                self.params.CROPPED_PLATES_DIR, cropped_name)
+                                cropped_dir, cropped_name)
                             cv2.imwrite(cropped_path, plate_resized)
                             print(f"✓ {image_path}")
                             print(f"  → Placa: {plate} (conf: {confidence}%)")
@@ -291,8 +310,8 @@ Example YAML:
                 else:
                     stats["invalid_detections"] += 1
                     print(f"✗ No se detectó placa válida en: {image_path}")
-                    dest_path = os.path.join(self.params.OUTPUT_DIR_NOREC)
-                    shutil.copy2(image_path, dest_path)
+                    norec_dir = self.params.get("output_dir_norec") or self.params.get("OUTPUT_DIR_NOREC")
+                    shutil.copy2(image_path, norec_dir)
             except Exception as e:
                 stats["errors"] += 1
                 print(f"✗ Error en {image_path}: {e}")
@@ -333,11 +352,11 @@ if __name__ == "__main__":
         help="Output folder for images without a valid plate detection.",
     )
     args = parser.parse_args()
-    params = argparse.Namespace(
-        IMAGES_DIR=args.images_dir,
-        OUTPUT_DIR=args.output_dir,
-        CROPPED_PLATES_DIR=args.cropped_plates_dir,
-        PLATE_MODEL_PATH=args.plate_model_path,
-        OUTPUT_DIR_NOREC=args.output_dir_norec,
-    )
+    params = {
+        "images_dir": args.images_dir,
+        "output_dir": args.output_dir,
+        "cropped_plates_dir": args.cropped_plates_dir,
+        "plate_model_path": args.plate_model_path,
+        "output_dir_norec": args.output_dir_norec,
+    }
     CopyAndRenameByPlateTask(params).run()

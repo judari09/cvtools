@@ -1,4 +1,8 @@
 tasks:
+  # ===========================================================================
+  # GENERAL — Utilidades de imágenes y datasets
+  # ===========================================================================
+
   - name: check_sizes
     params:
       folder_path: ./images
@@ -9,21 +13,50 @@ tasks:
       labels_dir: ./labels
       output_window: false
 
-  - name: move_to_comb
+  - name: check_model_classes
     params:
-      image_folder: ./images
-      label_folder: ./labels
-      destination_folder: ./comb
+      models:
+        - ./models/detector.pt
 
-  - name: prepare_images_to_dataset
+  - name: dataset_builder
     params:
-      input_dir: ./labelme_dataset
-      output_dir: ./ocr_dataset
-      target_height: 64
-      target_width: 256
-      padding: 0.05
-      mode: auto
+      source_images: ./images
+      source_labels: ./labels
+      destination: ./dataset_comb
+      filter_empty: true        # false → incluye etiquetas vacías
+
+  - name: separar_train_val
+    params:
+      images_folder: ./dataset_comb/images
+      labels_folder: ./dataset_comb/labels
+      train_folder: ./dataset/train
+      val_folder: ./dataset/val
       split_ratio: 0.8
+
+  - name: crop_dataset
+    params:
+      input_dir: ./labelme_dataset   # carpeta con JSON + imágenes
+      output_dir: ./ocr_dataset
+      source: json                   # "json" (LabelMe) o "yolo" (modelo YOLO)
+      resize_w: 256
+      resize_h: 64
+      padding: 0.05
+      split_ratio: 0.8
+      naming_mode: auto              # auto | sequential | stem (solo source=json)
+      # model_path: ./models/plate.pt  # requerido si source=yolo
+      # conf: 0.5                      # umbral YOLO (solo source=yolo)
+      # seed: 42                       # semilla para split reproducible
+
+  - name: resize_folder
+    params:
+      source_folder: ./images
+      width: 640
+      height: 480
+
+  - name: extract_frames
+    params:
+      video_path: ./video.mp4
+      frame_step: 10
 
   - name: visualize_dataset
     params:
@@ -32,3 +65,87 @@ tasks:
       random_sample: true
       show_train: true
       show_val: false
+
+  # ===========================================================================
+  # JSON — Procesamiento de anotaciones LabelMe
+  # ===========================================================================
+
+  - name: listar_clases_json
+    params:
+      folder_path: ./labelme_dataset
+
+  - name: fix_labelme_json
+    params:
+      labels_dir: ./labelme_dataset
+      images_dir: ./images
+      version: "5.10.1"
+      dry_run: false               # true → muestra cambios sin escribir
+
+  - name: optimize_polygons_json
+    params:
+      folder_path: ./labelme_dataset
+      epsilon: 3.0                 # tolerancia Douglas-Peucker (mayor = más reducción)
+      min_dist: 2.0                # distancia mínima entre puntos consecutivos
+      min_points: 5                # mínimo de puntos por polígono
+      smooth: false                # true → suavizar contorno antes de simplificar
+      smooth_window: 5
+      target_label: null           # null = todos los labels; "placa" = solo ese label
+
+  - name: json2txt
+    params:
+      input_dir: ./labelme_dataset
+      output_dir: ./labels_yolo
+      carpeta_imagenes: ./images
+      class_map:                   # mapeo label → id de clase
+        placa: 0
+        vehiculo: 1
+      default_class_id: 0
+
+  - name: remove_label_json
+    params:
+      folder_path: ./labelme_dataset
+      label_to_remove: ruido
+
+  - name: clean_labels_json
+    params:
+      folder_path: ./labelme_dataset
+      field: imageData
+      value: null
+
+  # ===========================================================================
+  # AUGMENTATION — Aumento de datos con Albumentations
+  # ===========================================================================
+
+  - name: albumentations_for_yolo
+    params:
+      input_images_dir: ./dataset/train/images
+      input_labels_dir: ./dataset/train/labels
+      output_images_dir: ./dataset_aug/images
+      output_labels_dir: ./dataset_aug/labels
+
+  - name: albumentations_for_yoloseg
+    params:
+      input_images_dir: ./dataset/train/images
+      input_labels_dir: ./dataset/train/labels   # JSON de LabelMe
+      output_images_dir: ./dataset_aug/images
+      output_labels_dir: ./dataset_aug/labels
+      umbral_bajo: 0.20            # clases con < 20% del total → tier BAJO (12 copias)
+      umbral_medio: 0.40           # clases con 20-40% → tier MEDIO (8 copias)
+
+  # ===========================================================================
+  # AUTOLABELING — Etiquetado automático con modelos YOLO + SAM
+  # ===========================================================================
+
+  - name: auto_label_labelme
+    params:
+      input: ./images_raw
+      output: ./labelme_dataset
+      models:
+        - ./models/seg_model.pt    # modelos de segmentación
+      det_models: []               # modelos de detección (requieren SAM para máscara)
+      conf: 0.5
+      use_sam: false
+      sam_model: null              # ej: sam2_b.pt
+      class_map: []                # ej: ["vehiculo:auto", "persona:null"]
+      epsilon: 2.0                 # simplificación de polígonos
+      det_only: false              # true → fuerza modo detección (rectángulos)

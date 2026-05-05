@@ -140,16 +140,21 @@ Example YAML:
         - Corresponding label files must exist in YOLO .txt format.
         - Output images are saved as .jpg files.
         """
-        os.makedirs(self.params.output_images_dir, exist_ok=True)
-        os.makedirs(self.params.output_labels_dir, exist_ok=True)
+        input_images_dir = self.params.get("input_images_dir")
+        input_labels_dir = self.params.get("input_labels_dir")
+        output_images_dir = self.params.get("output_images_dir")
+        output_labels_dir = self.params.get("output_labels_dir")
 
-        for img_name in os.listdir(self.params.input_images_dir):
+        os.makedirs(output_images_dir, exist_ok=True)
+        os.makedirs(output_labels_dir, exist_ok=True)
+
+        for img_name in os.listdir(input_images_dir):
             if not img_name.lower().endswith(('.jpg', '.png', '.jpeg')):
                 # Si no es una imagen, saltar al siguiente
                 print(f"Advertencia: {img_name} no es una imagen válida. Se omite.")
                 continue
-            img_path = os.path.join(self.params.input_images_dir, img_name) # Ruta completa de la imagen
-            label_path = os.path.join(self.params.input_labels_dir, os.path.splitext(img_name)[0] + '.txt') # Ruta completa del archivo de etiquetas
+            img_path = os.path.join(input_images_dir, img_name)
+            label_path = os.path.join(input_labels_dir, os.path.splitext(img_name)[0] + '.txt')
 
             if not os.path.exists(label_path):
                 # Si no existe el archivo de etiquetas, saltar al siguiente
@@ -175,11 +180,11 @@ Example YAML:
 
                 # Guardar imagen aumentada
                 out_img_name = f"{os.path.splitext(img_name)[0]}_aug{i}.jpg" # Nombre de la imagen aumentada
-                out_img_path = os.path.join(self.params.output_images_dir, out_img_name) # Ruta completa de la imagen aumentada
+                out_img_path = os.path.join(output_images_dir, out_img_name)
                 cv2.imwrite(out_img_path, image_aug) # Guardar imagen aumentada en formato BGR
 
                 # Guardar labels aumentados
-                out_label_path = os.path.join(self.params.output_labels_dir, f"{os.path.splitext(img_name)[0]}_aug{i}.txt") # Ruta completa del archivo de etiquetas aumentadas
+                out_label_path = os.path.join(output_labels_dir, f"{os.path.splitext(img_name)[0]}_aug{i}.txt")
                 self.save_yolo_labels(out_label_path, bboxes_aug, labels_aug) # Guardar etiquetas aumentadas en formato YOLO
 
 if __name__ == "__main__":
@@ -209,10 +214,10 @@ if __name__ == "__main__":
         help="Output folder for augmented label files.",
     )
     args = parser.parse_args()
-    params = argparse.Namespace(
-        input_images_dir=args.input_images_dir,
-        input_labels_dir=args.input_labels_dir,
-        output_images_dir=args.output_images_dir,
-        output_labels_dir=args.output_labels_dir,
-    )
+    params = {
+        "input_images_dir": args.input_images_dir,
+        "input_labels_dir": args.input_labels_dir,
+        "output_images_dir": args.output_images_dir,
+        "output_labels_dir": args.output_labels_dir,
+    }
     AlbumentationsForYoloTask(params).run()

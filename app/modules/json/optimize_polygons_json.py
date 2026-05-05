@@ -1,14 +1,14 @@
 import os
 import json
 import shutil
-import numpy as np
-import cv2
 try:
     from app.core.task import Task
+    from app.utils.polygon_utils import remove_close_points, simplify_polygon, smooth_contour, optimize_shape
 except ImportError:
-    import os, sys
+    import sys
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
     from app.core.task import Task
+    from app.utils.polygon_utils import remove_close_points, simplify_polygon, smooth_contour, optimize_shape
 
 
 class OptimizePolygonsJsonTask(Task):
@@ -39,138 +39,6 @@ Example YAML:
         super().__init__(name="optimize_polygons_json", params=params)
         self.params = params
 
-    def remove_close_points(self, points, min_dist=2.0):
-        """Remove consecutive points that are closer than min_dist pixels.
-
-        This removes duplicate or nearly duplicate points that generate visual noise.
-
-        Parameters
-        ----------
-        points : list
-            List of [x, y] points.
-        min_dist : float, optional
-            Minimum distance between consecutive points in pixels. Default is 2.0.
-
-        Returns
-        -------
-        list
-            Filtered list of points.
-        """
-        if len(points) <= 3:
-            return points
-
-        filtered = [points[0]]
-        for pt in points[1:]:
-            dx = pt[0] - filtered[-1][0]
-            dy = pt[1] - filtered[-1][1]
-            if (dx * dx + dy * dy) >= min_dist * min_dist:
-                filtered.append(pt)
-
-        return filtered if len(filtered) >= 3 else points
-
-
-    def simplify_polygon(self, points, epsilon=2.0, min_points=5):
-        """Simplify a polygon using Douglas-Peucker algorithm (cv2.approxPolyDP).
-
-        Parameters
-        ----------
-        points : list
-            List of [x, y] points.
-        epsilon : float, optional
-            Tolerance in pixels (higher = more simplification). Default is 2.0.
-        min_points : int, optional
-            Minimum number of points to preserve. Default is 5.
-
-        Returns
-        -------
-        list
-            Simplified list of points.
-        """
-        if len(points) <= min_points:
-            return points
-
-        pts = np.array(points, dtype=np.float32).reshape((-1, 1, 2))
-        approx = cv2.approxPolyDP(pts, epsilon, True)
-        result = [[float(x), float(y)] for [x, y] in approx[:, 0, :]]
-
-        # Si se redujo demasiado, tomar puntos distribuidos del original
-        if len(result) < min_points:
-            step = max(1, len(points) // min_points)
-            result = points[::step][:min_points]
-
-        return result
-
-
-    def smooth_contour(self,points, window=5):
-        """Smooth the contour by applying circular moving average on coordinates.
-
-        Reduces irregularities without drastically changing the shape.
-
-        Parameters
-        ----------
-        points : list
-            List of [x, y] points.
-        window : int, optional
-            Size of the smoothing window (odd recommended). Default is 5.
-
-        Returns
-        -------
-        list
-            Smoothed list of points.
-        """
-        if len(points) <= window:
-            return points
-
-        pts = np.array(points, dtype=np.float64)
-        n = len(pts)
-        half = window // 2
-        smoothed = np.zeros_like(pts)
-
-        for i in range(n):
-            indices = [(i + j) % n for j in range(-half, half + 1)]
-            smoothed[i] = pts[indices].mean(axis=0)
-
-        return [[round(float(x), 1), round(float(y), 1)] for x, y in smoothed]
-
-
-    def optimize_shape(self,points, epsilon=3.0, min_dist=2.0, min_points=5, smooth=False, smooth_window=5):
-        """Complete polygon optimization pipeline.
-
-        1. Remove close/duplicate points
-        2. (Optional) Smooth contour
-        3. Simplify with Douglas-Peucker
-
-        Parameters
-        ----------
-        points : list
-            List of [x, y] points.
-        epsilon : float, optional
-            Douglas-Peucker tolerance. Default is 3.0.
-        min_dist : float, optional
-            Minimum distance between consecutive points. Default is 2.0.
-        min_points : int, optional
-            Minimum points to preserve. Default is 5.
-        smooth : bool, optional
-            Enable contour smoothing. Default is False.
-        smooth_window : int, optional
-            Smoothing window size. Default is 5.
-
-        Returns
-        -------
-        list
-            Optimized list of points.
-        """
-        # Paso 1: eliminar puntos cercanos
-        points = self.remove_close_points(points, min_dist=min_dist)
-
-        # Paso 2: suavizado opcional
-        if smooth and len(points) > smooth_window:
-            points = self.smooth_contour(points, window=smooth_window)
-
-        # Paso 3: simplificacion Douglas-Peucker
-        points = self.simplify_polygon(points, epsilon=epsilon, min_points=min_points)
-
-        return points
 
 
     def optimize_jsons(self, folder_path, epsilon=3.0, min_dist=2.0, min_points=5,
@@ -233,7 +101,7 @@ Example YAML:
                     continue
 
                 original_count = len(shape['points'])
-                optimized = self.optimize_shape(
+                optimized = optimize_shape(
                     shape['points'],
                     epsilon=epsilon,
                     min_dist=min_dist,
@@ -262,16 +130,15 @@ Example YAML:
         print(f"  Reduccion: {reduction:.1f}%")
 
     def run(self):
-        """Run the polygon optimization task.
-        """
+        """Run the polygon optimization task."""
         self.optimize_jsons(
-            folder_path=self.params.folder_path,
-            epsilon=self.params.epsilon,
-            min_dist=self.params.min_dist,
-            min_points=self.params.min_points,
-            smooth=self.params.smooth,
-            smooth_window=self.params.smooth_window,
-            target_label=self.params.target_label,
+            folder_path=self.params.get("folder_path"),
+            epsilon=float(self.params.get("epsilon", 3.0)),
+            min_dist=float(self.params.get("min_dist", 2.0)),
+            min_points=int(self.params.get("min_points", 5)),
+            smooth=bool(self.params.get("smooth", False)),
+            smooth_window=int(self.params.get("smooth_window", 5)),
+            target_label=self.params.get("target_label"),
         )
 
 if __name__ == "__main__":
@@ -320,13 +187,13 @@ if __name__ == "__main__":
         help="Only optimize polygons with this label.",
     )
     args = parser.parse_args()
-    params = argparse.Namespace(
-        folder_path=args.folder_path,
-        epsilon=args.epsilon,
-        min_dist=args.min_dist,
-        min_points=args.min_points,
-        smooth=args.smooth,
-        smooth_window=args.smooth_window,
-        target_label=args.target_label,
-    )
+    params = {
+        "folder_path": args.folder_path,
+        "epsilon": args.epsilon,
+        "min_dist": args.min_dist,
+        "min_points": args.min_points,
+        "smooth": args.smooth,
+        "smooth_window": args.smooth_window,
+        "target_label": args.target_label,
+    }
     OptimizePolygonsJsonTask(params).run()

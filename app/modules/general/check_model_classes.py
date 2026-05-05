@@ -6,7 +6,12 @@ Ultralytics/YOLO cargados desde disco.
 
 import argparse
 
-from app.core.task import Task
+try:
+    from app.core.task import Task
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+    from app.core.task import Task
 
 
 class CheckModelClassesTask(Task):

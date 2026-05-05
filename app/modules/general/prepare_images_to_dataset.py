@@ -224,6 +224,7 @@ def process_dataset(
 
 
 class PrepareImagesToDatasetTask(Task):
+    # DEPRECATED: usa CropDatasetTask (crop_dataset) con source=json
     """Tarea para crear un dataset de placas a partir de LabelMe.
 
 Example YAML:

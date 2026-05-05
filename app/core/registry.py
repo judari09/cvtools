@@ -125,3 +125,53 @@ class registry:
             "registered": registered,
             "missing": missing,
         }
+
+    def autodiscover(self, base_package: str) -> dict:
+        """Escanea todos los módulos bajo base_package y registra subclases de Task.
+
+        Parameters
+        ----------
+        base_package : str
+            Paquete base a escanear, en formato de módulo Python (ej: 'app.modules')
+            o ruta con barras (ej: 'app/modules', convertida automáticamente).
+
+        Returns
+        -------
+        dict
+            Diccionario con listas 'registered' (nombres registrados) y
+            'skipped' (módulos con errores de importación).
+        """
+        import pkgutil
+        import importlib
+
+        package_name = base_package.replace('/', '.').replace('\\', '.')
+        try:
+            package = importlib.import_module(package_name)
+        except ImportError as e:
+            print(f"⚠ autodiscover: no se pudo importar el paquete '{package_name}': {e}")
+            return {"registered": [], "skipped": []}
+
+        registered = []
+        skipped = []
+
+        for finder, module_name, ispkg in pkgutil.walk_packages(
+            package.__path__, prefix=package.__name__ + '.'
+        ):
+            try:
+                mod = importlib.import_module(module_name)
+                for attr_name in vars(mod):
+                    attr = getattr(mod, attr_name)
+                    if (
+                        isinstance(attr, type)
+                        and issubclass(attr, Task)
+                        and attr is not Task
+                        and hasattr(attr, 'name')
+                        and isinstance(attr.name, str)
+                        and attr.name
+                    ):
+                        self.task_registry[attr.name] = attr
+                        registered.append(attr.name)
+            except Exception:
+                skipped.append(module_name)
+
+        return {"registered": registered, "skipped": skipped}

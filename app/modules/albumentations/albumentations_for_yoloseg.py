@@ -6,10 +6,12 @@ import glob
 from collections import Counter
 try:
     from app.core.task import Task
+    from app.utils.class_utils import count_classes_per_image_json
 except ImportError:
-    import os, sys
+    import sys
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
     from app.core.task import Task
+    from app.utils.class_utils import count_classes_per_image_json
 
 
 # ---------------------------------------------------------------------------
@@ -165,37 +167,8 @@ Example YAML:
     # ---------------------------------------------------------------------------
 
     def contar_clases(self, label_folder, image_files):
-        """
-        Count how many images contain each class at least once.
-
-        Parameters
-        ----------
-        label_folder : str
-            Path to the folder containing JSON label files.
-        image_files : list of str
-            List of paths to image files.
-
-        Returns
-        -------
-        collections.Counter
-            Counter object with class labels as keys and the number of images
-            containing each class as values.
-        """
-        conteo = Counter()
-        for image_path in image_files:
-            base_name = os.path.splitext(os.path.basename(image_path))[0]
-            json_path = os.path.join(label_folder, base_name + ".json")
-            if not os.path.exists(json_path):
-                continue
-            try:
-                with open(json_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                clases_en_imagen = {shape["label"] for shape in data.get("shapes", [])}
-                for clase in clases_en_imagen:
-                    conteo[clase] += 1
-            except Exception:
-                pass
-        return conteo
+        """Count how many images contain each class at least once."""
+        return count_classes_per_image_json(label_folder, image_files)
 
 
     def calcular_tier(self, clases_imagen, conteo_global, total_imagenes):
@@ -225,9 +198,9 @@ Example YAML:
             for c in clases_imagen
         )
 
-        if fraccion_min <= self.params.UMBRAL_BAJO:
+        if fraccion_min <= self.params.get("UMBRAL_BAJO", 0.20):
             return "bajo"
-        elif fraccion_min <= self.params.UMBRAL_MEDIO:
+        elif fraccion_min <= self.params.get("UMBRAL_MEDIO", 0.40):
             return "medio"
         else:
             return "alto"
@@ -464,8 +437,8 @@ Example YAML:
         print(f"\nDistribución de clases ({total_imagenes} imágenes totales):")
         for clase, cnt in sorted(conteo_global.items(), key=lambda x: x[1]):
             fraccion = cnt / total_imagenes
-            tier_cls = ("BAJO" if fraccion <= self.params.UMBRAL_BAJO
-                        else "MEDIO" if fraccion <= self.params.UMBRAL_MEDIO
+            tier_cls = ("BAJO" if fraccion <= self.params.get("UMBRAL_BAJO", 0.20)
+                        else "MEDIO" if fraccion <= self.params.get("UMBRAL_MEDIO", 0.40)
                         else "ALTO")
             print(f"  {clase:<25} {cnt:>4} imágenes ({fraccion*100:.1f}%)  → tier {tier_cls}")
         print()
@@ -523,17 +496,14 @@ Example YAML:
         print(f"{'='*55}")
 
     def run(self):
-        """
-        Execute the augmentation process for YOLO segmentation datasets.
-
-        This method calls process_folder with the input and output directories
-        specified in the task parameters.
-        """
+        """Execute the augmentation process for YOLO segmentation datasets."""
+        self.params["UMBRAL_BAJO"] = self.params.get("umbral_bajo", self.params.get("UMBRAL_BAJO", 0.20))
+        self.params["UMBRAL_MEDIO"] = self.params.get("umbral_medio", self.params.get("UMBRAL_MEDIO", 0.40))
         self.process_folder(
-            self.params.input_images_dir,
-            self.params.input_labels_dir,
-            self.params.output_images_dir,
-            self.params.output_labels_dir
+            self.params.get("input_images_dir"),
+            self.params.get("input_labels_dir"),
+            self.params.get("output_images_dir"),
+            self.params.get("output_labels_dir"),
         )
 
 
@@ -564,10 +534,10 @@ if __name__ == "__main__":
         help="Output folder for generated JSON label files.",
     )
     args = parser.parse_args()
-    params = argparse.Namespace(
-        input_images_dir=args.input_images_dir,
-        input_labels_dir=args.input_labels_dir,
-        output_images_dir=args.output_images_dir,
-        output_labels_dir=args.output_labels_dir,
-    )
+    params = {
+        "input_images_dir": args.input_images_dir,
+        "input_labels_dir": args.input_labels_dir,
+        "output_images_dir": args.output_images_dir,
+        "output_labels_dir": args.output_labels_dir,
+    }
     AlbumentationsForYolosegTask(params).run()

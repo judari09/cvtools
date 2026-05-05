@@ -63,6 +63,7 @@ def mover_imagenes_y_etiquetas(image_folder, label_folder, destination_folder):
 
 
 class MoveToCombTask(Task):
+    # DEPRECATED: usa DatasetBuilderTask (dataset_builder) con filter_empty=True
     """Tarea para copiar imágenes y etiquetas emparejadas a una carpeta combinada.
 
 Example YAML:

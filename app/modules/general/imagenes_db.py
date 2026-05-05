@@ -36,6 +36,7 @@ def mover_imagenes_con_txt(source_folder, destination_folder):
 
 
 class ImagenesDbTask(Task):
+    # DEPRECATED: usa DatasetBuilderTask (dataset_builder) con filter_empty=False
     """Tarea para mover imágenes que tienen etiquetas TXT asociadas.
 
 Example YAML:

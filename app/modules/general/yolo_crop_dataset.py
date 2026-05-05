@@ -70,6 +70,7 @@ def split_and_save(crops, output_dir, split_ratio, seed):
 
 
 class YoloCropDatasetTask(Task):
+    # DEPRECATED: usa CropDatasetTask (crop_dataset) con source=yolo
     """Tarea para recortar placas con YOLO y generar dataset OCR.
 
 Example YAML:
