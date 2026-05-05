@@ -1,59 +1,59 @@
 # CVTools
 
-A comprehensive suite of computer vision tools designed for dataset preparation, augmentation, auto-labeling, and general image processing tasks. Built with a modular task-based architecture that supports both YAML-driven pipelines and direct CLI execution.
+Suite completa de herramientas de visión por computadora diseñada para la preparación de datasets, aumento de datos, etiquetado automático y procesamiento general de imágenes. Construida con una arquitectura modular basada en tareas que soporta pipelines YAML y ejecución directa por CLI.
 
-## Features
+## Características
 
-### Core Architecture
+### Arquitectura principal
 
-- **Task-Based Design**: Modular tasks that can be composed into complex pipelines
-- **YAML Configuration**: Define and execute multi-step workflows via configuration files
-- **CLI Support**: Direct command-line execution for individual tools
-- **Extensible**: Easy to add new tasks and integrate with existing CV workflows
+- **Diseño basado en tareas**: Módulos independientes que se pueden combinar en pipelines complejos
+- **Configuración YAML**: Define y ejecuta flujos de trabajo de múltiples pasos mediante archivos de configuración
+- **Soporte CLI**: Ejecución directa desde la línea de comandos para cada herramienta
+- **Extensible**: Fácil de agregar nuevas tareas e integrar con flujos de trabajo de visión existentes
 
-### Available Modules
+### Módulos disponibles
 
-#### General Tools (`app/modules/general/`)
+#### Herramientas generales (`app/modules/general/`)
 
-- **Dataset Integrity Check**: Verify dataset consistency and detect corrupted files
-- **Model Classes Validation**: Check and validate YOLO model class configurations
-- **Image Size Analysis**: Analyze and report image dimensions across datasets
-- **Image Cropping**: Crop images based on various criteria
-- **Frame Extraction**: Extract frames from video files
-- **Image Database**: Manage and organize image collections
-- **Dataset Splitting**: Split datasets into train/validation/test sets
-- **Image Resizing**: Batch resize images to specified dimensions
-- **Dataset Visualization**: Generate visual reports and statistics for datasets
-- **YOLO Dataset Cropping**: Specialized cropping for YOLO-formatted datasets
+- **Verificación de integridad de datasets**: Verifica la consistencia del dataset y detecta archivos corruptos
+- **Validación de clases del modelo**: Revisa y valida configuraciones de clases de modelos YOLO
+- **Análisis de tamaño de imágenes**: Analiza y reporta dimensiones de imágenes en datasets
+- **Recorte de imágenes**: Recorta imágenes según diversos criterios
+- **Extracción de frames**: Extrae frames de archivos de video
+- **Base de datos de imágenes**: Gestiona y organiza colecciones de imágenes
+- **División de datasets**: Divide datasets en conjuntos de entrenamiento, validación y prueba
+- **Redimensionado de imágenes**: Redimensiona imágenes por lotes a dimensiones especificadas
+- **Visualización de datasets**: Genera reportes visuales y estadísticas de datasets
+- **Recorte de datasets YOLO**: Recorte especializado para datasets en formato YOLO
 
-#### JSON Processing (`app/modules/json/`)
+#### Procesamiento JSON (`app/modules/json/`)
 
-- **Clean Labels**: Remove or modify specific fields in JSON label files
-- **Fix LabelMe JSON**: Correct LabelMe JSON files for compatibility
-- **JSON to TXT**: Convert LabelMe JSON annotations to YOLO .txt format
-- **List Classes**: Extract and count unique classes from JSON files
-- **Optimize Polygons**: Simplify and optimize polygon annotations
-- **Remove Labels**: Remove specific label types from JSON files
+- **Limpieza de etiquetas**: Elimina o modifica campos específicos en archivos JSON de etiquetas
+- **Corrección de JSON LabelMe**: Corrige archivos JSON de LabelMe para compatibilidad
+- **JSON a TXT**: Convierte anotaciones JSON de LabelMe a formato YOLO `.txt`
+- **Listar clases**: Extrae y cuenta clases únicas desde archivos JSON
+- **Optimización de polígonos**: Simplifica y optimiza anotaciones de polígonos
+- **Eliminar etiquetas**: Elimina tipos de etiquetas específicos de archivos JSON
 
-#### Data Augmentation (`app/modules/albumentations/`)
+#### Aumento de datos (`app/modules/albumentations/`)
 
-- **YOLO Augmentation**: Apply augmentations to YOLO object detection datasets
-- **YOLO Segmentation Augmentation**: Augment YOLO segmentation datasets with polygon preservation
+- **Aumento para YOLO**: Aplica aumentaciones a datasets YOLO de detección de objetos
+- **Aumento para YOLO Segmentación**: Aumenta datasets de segmentación YOLO con preservación de polígonos
 
-#### Auto-Labeling (`app/modules/autolabeling/`)
+#### Auto-etiquetado (`app/modules/autolabeling/`)
 
-- **LabelMe Auto-Labeling**: Automatic labeling using YOLO models with SAM refinement
-- **OCR Auto-Labeling**: Extract text from images using PaddleOCR
-- **License Plate Processing**: Detect and process license plates with ALPR
+- **Auto-etiquetado con LabelMe**: Etiquetado automático con modelos YOLO y refinamiento SAM
+- **Auto-etiquetado OCR**: Extrae texto de imágenes usando PaddleOCR
+- **Procesamiento de placas**: Detecta y procesa placas vehiculares con ALPR
 
-## Installation
+## Instalación
 
-### Prerequisites
+### Requisitos previos
 
-- Python 3.12 or higher
-- pip package manager
+- Python 3.12 o superior
+- pip
 
-### Basic Installation
+### Instalación básica
 
 ```bash
 git clone <repository-url>
@@ -61,36 +61,36 @@ cd cvtools
 pip install -e .
 ```
 
-### Additional Dependencies
+### Dependencias adicionales
 
-Depending on the modules you plan to use, install additional packages:
+Según los módulos que vayas a usar, instala los paquetes adicionales:
 
 ```bash
-# For general CV operations
+# Para operaciones generales de visión por computadora
 pip install opencv-python numpy tqdm
 
-# For YOLO-based tasks
+# Para tareas basadas en YOLO
 pip install ultralytics
 
-# For data augmentation
+# Para aumento de datos
 pip install albumentations
 
-# For OCR tasks
+# Para tareas OCR
 pip install paddlepaddle paddleocr
 
-# For license plate recognition
+# Para reconocimiento de placas
 pip install fast-alpr
 ```
 
-## Usage
+## Uso
 
-### YAML Pipeline Mode (Recommended)
+### Modo pipeline YAML (recomendado)
 
-CVTools supports complex workflows through YAML configuration files. This allows you to chain multiple tasks together and execute them in sequence.
+CVTools soporta flujos de trabajo complejos mediante archivos de configuración YAML, permitiendo encadenar múltiples tareas y ejecutarlas en secuencia.
 
-#### Example Configuration
+#### Ejemplo de configuración
 
-See `config_example.yaml` for a complete example. Here's a basic pipeline:
+Consulta `config_example.yaml` para un ejemplo completo. Aquí un pipeline básico:
 
 ```yaml
 tasks:
@@ -114,142 +114,142 @@ tasks:
       test_ratio: 0.1
 ```
 
-#### Running a Pipeline
+#### Ejecutar un pipeline
 
 ```bash
 python main.py
 ```
 
-The pipeline will execute all tasks defined in `config_example.yaml` in order.
+El pipeline ejecutará todas las tareas definidas en `config_example.yaml` en orden.
 
-### CLI Mode
+### Modo CLI
 
-Each module can be executed directly from the command line for quick tasks or testing.
+Cada módulo puede ejecutarse directamente desde la línea de comandos para tareas rápidas o pruebas.
 
-#### General Tools Examples
+#### Ejemplos — Herramientas generales
 
 ```bash
-# Check dataset integrity
+# Verificar integridad del dataset
 python -m app.modules.general.check_integrity_dataset --folder-path data/images
 
-# Resize images
+# Redimensionar imágenes
 python -m app.modules.general.resize_folder --input-folder data/images --output-folder data/resized --width 640 --height 480
 
-# Split dataset
+# Dividir dataset
 python -m app.modules.general.separar_train_val --dataset-folder data/dataset --train-ratio 0.7 --val-ratio 0.2 --test-ratio 0.1
 ```
 
-#### JSON Processing Examples
+#### Ejemplos — Procesamiento JSON
 
 ```bash
-# Convert JSON to YOLO format
+# Convertir JSON a formato YOLO
 python -m app.modules.json.json2txt --input-dir labels/json --output-dir labels/txt
 
-# Fix LabelMe JSON files
+# Corregir archivos JSON de LabelMe
 python -m app.modules.json.fix_labelme_json --labels-dir labels/json --images-dir images
 
-# List unique classes
+# Listar clases únicas
 python -m app.modules.json.listar_clases_json --folder-path labels/json
 ```
 
-#### Augmentation Examples
+#### Ejemplos — Aumento de datos
 
 ```bash
-# Augment YOLO dataset
+# Aumentar dataset YOLO
 python -m app.modules.albumentations.albumentations_for_yolo --input-images-dir data/images --input-labels-dir data/labels --output-images-dir data/aug_images --output-labels-dir data/aug_labels
 ```
 
-#### Auto-Labeling Examples
+#### Ejemplos — Auto-etiquetado
 
 ```bash
-# Auto-label with YOLO
+# Auto-etiquetar con YOLO
 python -m app.modules.autolabeling.auto_label_labelme --models yolov8n-seg.pt --input images --output labels/json --conf 0.5
 
-# OCR labeling
+# Etiquetado OCR
 python -m app.modules.autolabeling.auto_label_ocr --input-folder images --output-file labels.txt
 ```
 
-## Project Structure
+## Estructura del proyecto
 
 ```
 cvtools/
-├── main.py                    # Main entry point for YAML pipelines
-├── config_example.yaml        # Example pipeline configuration
-├── pyproject.toml            # Project configuration and dependencies
+├── main.py                    # Punto de entrada para pipelines YAML
+├── config_example.yaml        # Ejemplo de configuración de pipeline
+├── pyproject.toml             # Configuración del proyecto y dependencias
 ├── app/
-│   ├── core/                 # Core architecture
-│   │   ├── task.py          # Base Task class
-│   │   ├── registry.py      # Task registration system
-│   │   ├── executor.py      # Pipeline execution engine
-│   │   └── pipeline.py      # YAML pipeline loader
-│   └── modules/             # Task modules
-│       ├── general/         # General CV utilities
-│       ├── json/            # JSON processing tools
-│       ├── albumentations/  # Data augmentation
-│       └── autolabeling/    # Auto-labeling tools
-├── test/                    # Test files
-├── pipelines/               # Additional pipeline examples
-└── utils/                   # Utility scripts
+│   ├── core/                  # Arquitectura principal
+│   │   ├── task.py            # Clase base Task
+│   │   ├── registry.py        # Sistema de registro de tareas
+│   │   ├── executor.py        # Motor de ejecución de pipelines
+│   │   └── pipeline.py        # Cargador de pipelines YAML
+│   └── modules/               # Módulos de tareas
+│       ├── general/           # Utilidades generales de visión
+│       ├── json/              # Herramientas de procesamiento JSON
+│       ├── albumentations/    # Aumento de datos
+│       └── autolabeling/      # Herramientas de auto-etiquetado
+├── test/                      # Archivos de prueba
+├── pipelines/                 # Ejemplos adicionales de pipelines
+└── utils/                     # Scripts de utilidades
 ```
 
-## Configuration
+## Configuración
 
-### Task Parameters
+### Parámetros de tareas
 
-Each task accepts specific parameters. Refer to the task's docstring or use `--help` with CLI mode for detailed parameter information.
+Cada tarea acepta parámetros específicos. Consulta el docstring de la tarea o usa `--help` en modo CLI para información detallada de los parámetros.
 
-### Custom Pipelines
+### Pipelines personalizados
 
-Create your own `config.yaml` and modify `main.py` to load it:
+Crea tu propio `config.yaml` y modifica `main.py` para cargarlo:
 
 ```python
 pipeline = Pipeline("your_config.yaml")
 ```
 
-## Documentation
+## Documentación
 
-Project documentation is generated in the `docs/` folder and configured with `mkdocs.yml`.
+La documentación del proyecto está generada en la carpeta `docs/` y configurada con `mkdocs.yml`.
 
-To preview the documentation locally:
+Para previsualizar la documentación localmente:
 
 ```bash
 pip install mkdocs mkdocs-material
 mkdocs serve
 ```
 
-To build the static site:
+Para construir el sitio estático:
 
 ```bash
 mkdocs build
 ```
 
-## Contributing
+## Contribuir
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Haz un fork del repositorio
+2. Crea una rama para tu funcionalidad (`git checkout -b feature/nueva-funcionalidad`)
+3. Haz commit de tus cambios (`git commit -m 'Agrega nueva funcionalidad'`)
+4. Sube la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
 
-### Adding New Tasks
+### Agregar nuevas tareas
 
-1. Create a new task class inheriting from `Task`
-2. Implement the `run()` method
-3. Add CLI wrapper with `if __name__ == "__main__"`
-4. Register the task in `main.py` if needed for pipelines
-5. Update documentation
+1. Crea una clase de tarea que herede de `Task`
+2. Implementa el método `run()`
+3. Agrega el wrapper CLI con `if __name__ == "__main__"`
+4. Registra la tarea en `main.py` si es necesario para pipelines
+5. Actualiza la documentación
 
-## License
+## Licencia
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Este proyecto está bajo la Licencia MIT — consulta el archivo LICENSE para más detalles.
 
-## Support
+## Soporte
 
-For issues, questions, or contributions, please open an issue on the GitHub repository.
+Para reportar problemas, hacer preguntas o contribuir, abre un issue en el repositorio de GitHub.
 
-## Acknowledgments
+## Reconocimientos
 
-- Built with Ultralytics YOLO for computer vision tasks
-- Uses Albumentations for data augmentation
-- Leverages PaddleOCR for text recognition
-- Fast-ALPR for license plate recognition
+- Construido con Ultralytics YOLO para tareas de visión por computadora
+- Usa Albumentations para aumento de datos
+- Aprovecha PaddleOCR para reconocimiento de texto
+- Fast-ALPR para reconocimiento de placas vehiculares
